@@ -10,13 +10,11 @@
 		"logs": { "head_sampling_rate": 1 },
 		"traces": { "enabled": true, "head_sampling_rate": 0.01 }
 	},
-	// Replace both IDs after: wrangler kv namespace create FEED --preview false
-	// Namespace title: sports-today-prompts-feed
+	// Local `wrangler dev` / Vitest use Miniflare (isolated local KV). No preview_id.
 	"kv_namespaces": [
 		{
 			"binding": "FEED",
-			"id": "00000000000000000000000000000001",
-			"preview_id": "00000000000000000000000000000002"
+			"id": "d3d54619d3df4701ba64ddb7bd98bc4f"
 		}
 	]
 }

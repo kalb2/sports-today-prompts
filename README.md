@@ -114,54 +114,37 @@ npm run seed
 
 ## Go-live
 
-Live Cloudflare deploy from this repo needs account secrets. Do these once, then merge to `main` (or run the Deploy workflow).
+KV is already created: **`sports-today-prompts-feed`** (`d3d54619d3df4701ba64ddb7bd98bc4f`), bound as `FEED` in `wrangler.jsonc`. Local `wrangler dev` / Vitest use Miniflare (isolated local KV); there is no `preview_id`.
 
-### 1. Create KV
-
-```bash
-npx wrangler kv namespace create FEED
-```
-
-Use the title **`sports-today-prompts-feed`** in the dashboard (or rename after create). Paste the returned id into `wrangler.jsonc` (`kv_namespaces[0].id`).
-
-Optional preview namespace:
-
-```bash
-npx wrangler kv namespace create FEED --preview
-```
-
-Paste that id as `preview_id`.
-
-`wrangler.jsonc` currently has placeholder ids (`00000000…0001` / `…0002`) so the project typechecks and tests locally. **Replace them before the first production deploy** or Wrangler will fail to bind the real namespace.
-
-### 2. Set the publish secret
-
-```bash
-npx wrangler secret put PUBLISH_TOKEN
-```
-
-Use a long random token. This is what editors send as `Authorization: Bearer …`. It is never shipped to the iMessage app.
-
-### 3. GitHub Actions secrets
+### 1. GitHub Actions secret
 
 Repo → Settings → Secrets and variables → Actions:
 
-| Secret | Purpose |
-| --- | --- |
-| `CLOUDFLARE_API_TOKEN` | Token with **Edit Cloudflare Workers** (and KV if the token is scoped). |
-| `CLOUDFLARE_ACCOUNT_ID` | Account that owns `k24corp.workers.dev`. |
+| Name | Required | Purpose |
+| --- | --- | --- |
+| `CLOUDFLARE_API_TOKEN` | **Yes** | Token with Workers Scripts Edit and Workers KV Storage Edit. |
+| `PUBLISH_TOKEN` | Optional | If set, the workflow pipes it into the Worker secret after deploy (value is never echoed). |
+| `CLOUDFLARE_ACCOUNT_ID` | Optional | Secret **or** Actions variable. Only needed if the API token can see more than one account. Otherwise the workflow discovers the single account via `wrangler whoami` / the accounts API. |
 
 The workflow (`.github/workflows/deploy.yml`) runs `wrangler deploy` on **push to `main`** and **workflow_dispatch**.
 
-### 4. Deploy
+### 2. Deploy
+
+Merge this PR to `main` (or run the Deploy workflow after merge).
 
 ```bash
 npx wrangler deploy
 ```
 
-Or merge this PR to `main` after secrets + KV id are in place.
+If `PUBLISH_TOKEN` was not stored as a GitHub secret, set the Worker secret once after deploy:
 
-Confirm:
+```bash
+npx wrangler secret put PUBLISH_TOKEN
+```
+
+Use a long random token. Editors send it as `Authorization: Bearer …`. It is never shipped to the iMessage app.
+
+### 3. Confirm
 
 ```bash
 curl -sS https://sports-today-prompts.k24corp.workers.dev/health
@@ -170,7 +153,7 @@ curl -sS https://sports-today-prompts.k24corp.workers.dev/prompts
 
 Empty KV is fine: phones receive the seed immediately. Optionally `POST /publish` the seed (or the latest Notion Ready set) so KV holds an explicit snapshot.
 
-### 5. iMessage app
+### 4. iMessage app
 
 Build 65 already points at `/prompts`. Once the Worker is live, the stub fallback should stop.
 
@@ -201,6 +184,6 @@ wrangler.jsonc            Worker name, KV binding FEED
 ## Notes
 
 - **No Notion SDK / token in this Worker.** Notion stays on the editor/publish side.
-- KV binding name is `FEED`. Key is `feed:v1`.
+- KV binding name is `FEED` → namespace `sports-today-prompts-feed` (`d3d54619d3df4701ba64ddb7bd98bc4f`). Key is `feed:v1`.
 - Worker name is `sports-today-prompts`.
-- `PUBLISH_TOKEN` is a Wrangler secret, not a `vars` value.
+- `PUBLISH_TOKEN` is a Wrangler secret (optionally mirrored as a GitHub Actions secret so deploy can set it), not a `vars` value.
