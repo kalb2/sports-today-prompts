@@ -1,0 +1,23 @@
+{
+	"name": "sports-today-prompts",
+	"version": "1.0.0",
+	"private": true,
+	"type": "module",
+	"description": "Public JSON prompt feed Worker for the Sports Today iMessage app",
+	"scripts": {
+		"dev": "wrangler dev",
+		"deploy": "wrangler deploy",
+		"cf-typegen": "wrangler types",
+		"typecheck": "tsc --noEmit",
+		"test": "vitest run",
+		"seed": "tsx scripts/seed.ts"
+	},
+	"devDependencies": {
+		"@cloudflare/vitest-pool-workers": "^0.12.10",
+		"@types/node": "^24.5.2",
+		"tsx": "^4.20.5",
+		"typescript": "^5.9.2",
+		"vitest": "^3.2.4",
+		"wrangler": "^4.40.2"
+	}
+}

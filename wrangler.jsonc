@@ -1,0 +1,22 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "sports-today-prompts",
+	"main": "src/index.ts",
+	"compatibility_date": "2026-09-19",
+	"compatibility_flags": ["nodejs_compat"],
+	"workers_dev": true,
+	"observability": {
+		"enabled": true,
+		"logs": { "head_sampling_rate": 1 },
+		"traces": { "enabled": true, "head_sampling_rate": 0.01 }
+	},
+	// Replace both IDs after: wrangler kv namespace create FEED --preview false
+	// Namespace title: sports-today-prompts-feed
+	"kv_namespaces": [
+		{
+			"binding": "FEED",
+			"id": "00000000000000000000000000000001",
+			"preview_id": "00000000000000000000000000000002"
+		}
+	]
+}
