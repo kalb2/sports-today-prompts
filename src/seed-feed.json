@@ -1,0 +1,28 @@
+{
+	"version": 1,
+	"updatedAt": "2026-09-19T00:00:00.000Z",
+	"prompts": [
+		{
+			"id": "t10_nfl_003",
+			"format": "top_10_guess",
+			"sport": "nfl",
+			"title": "All-time NFL QBs by career passing yards",
+			"promptText": "Guess the top 10 career NFL passing yards leaders.",
+			"metricLabel": "yds",
+			"strikesAllowed": 3,
+			"acceptAliases": true,
+			"items": [
+				{ "rank": 1, "canonical": "Tom Brady", "aliases": ["Brady", "Tom Brady"], "metric": 89214 },
+				{ "rank": 2, "canonical": "Drew Brees", "aliases": ["Brees", "Drew Brees"], "metric": 80358 },
+				{ "rank": 3, "canonical": "Peyton Manning", "aliases": ["Peyton", "Peyton Manning", "P Manning"], "metric": 71940 },
+				{ "rank": 4, "canonical": "Brett Favre", "aliases": ["Favre", "Brett Favre"], "metric": 71838 },
+				{ "rank": 5, "canonical": "Aaron Rodgers", "aliases": ["Rodgers", "Aaron Rodgers"], "metric": 66274 },
+				{ "rank": 6, "canonical": "Matthew Stafford", "aliases": ["Stafford", "Matt Stafford", "Matthew Stafford"], "metric": 64516 },
+				{ "rank": 7, "canonical": "Ben Roethlisberger", "aliases": ["Roethlisberger", "Big Ben", "Ben Roethlisberger"], "metric": 64088 },
+				{ "rank": 8, "canonical": "Philip Rivers", "aliases": ["Rivers", "Philip Rivers", "Phil Rivers"], "metric": 63984 },
+				{ "rank": 9, "canonical": "Matt Ryan", "aliases": ["Ryan", "Matt Ryan", "Matty Ice"], "metric": 62792 },
+				{ "rank": 10, "canonical": "Dan Marino", "aliases": ["Marino", "Dan Marino"], "metric": 61361 }
+			]
+		}
+	]
+}
