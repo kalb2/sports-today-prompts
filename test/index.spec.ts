@@ -32,6 +32,16 @@ describe("GET /prompts", () => {
 			canonical: "Tom Brady",
 			metric: 89214,
 		});
+		expect(body.prompts[0]?.items[4]).toMatchObject({
+			rank: 5,
+			canonical: "Aaron Rodgers",
+			metric: 67273,
+		});
+		expect(body.prompts[0]?.items[5]).toMatchObject({
+			rank: 6,
+			canonical: "Matthew Stafford",
+			metric: 65705,
+		});
 		expect(body.prompts[0]?.items.map((item) => item.rank)).toEqual([
 			1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
 		]);
@@ -119,6 +129,94 @@ describe("POST /publish", () => {
 		const health = await fetchWorker("/health");
 		const healthBody = (await health.json()) as { ok: boolean; updatedAt: string };
 		expect(healthBody.updatedAt).toBe(publishBody.updatedAt);
+	});
+
+	it("raises stale Rodgers and Stafford totals without reordering the board", async () => {
+		const stale = structuredClone(SEED_FEED);
+		stale.updatedAt = "2026-10-06T11:56:42.000Z";
+		stale.prompts[0]!.items[4]!.metric = 66274;
+		stale.prompts[0]!.items[5]!.metric = 64516;
+		stale.prompts.push({
+			id: "t10_nba_006",
+			format: "top_10_guess",
+			sport: "nba",
+			title: "All-time NBA career assists leaders",
+			promptText: "Name the 10 players with the most NBA regular-season career assists.",
+			metricLabel: "ast",
+			strikesAllowed: 3,
+			acceptAliases: true,
+			items: [
+				{
+					rank: 1,
+					canonical: "John Stockton",
+					aliases: ["Stockton", "John Stockton"],
+					metric: 15806,
+				},
+			],
+		});
+
+		const publish = await fetchWorker("/publish", {
+			method: "POST",
+			headers: {
+				Authorization: `Bearer ${TOKEN}`,
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(stale),
+		});
+		expect(publish.status).toBe(200);
+		const publishBody = (await publish.json()) as { updatedAt: string };
+		const expectedUpdatedAt =
+			Date.parse(publishBody.updatedAt) >= Date.parse(SEED_FEED.updatedAt)
+				? publishBody.updatedAt
+				: SEED_FEED.updatedAt;
+
+		const feed = await fetchWorker("/prompts");
+		const body = (await feed.json()) as typeof SEED_FEED;
+		const passing = body.prompts[0];
+		expect(passing?.id).toBe("t10_nfl_003");
+		expect(passing?.items.map((item) => item.canonical)).toEqual(
+			SEED_FEED.prompts[0]?.items.map((item) => item.canonical),
+		);
+		expect(passing?.items.map((item) => item.rank)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+		expect(passing?.items[4]).toMatchObject({
+			canonical: "Aaron Rodgers",
+			aliases: ["Rodgers", "Aaron Rodgers"],
+			metric: 67273,
+		});
+		expect(passing?.items[5]).toMatchObject({
+			canonical: "Matthew Stafford",
+			aliases: ["Stafford", "Matt Stafford", "Matthew Stafford"],
+			metric: 65705,
+		});
+		expect(passing?.items[6]?.metric).toBe(64088);
+		expect(body.prompts[1]).toMatchObject({
+			id: "t10_nba_006",
+			items: [{ canonical: "John Stockton", metric: 15806 }],
+		});
+		expect(body.updatedAt).toBe(expectedUpdatedAt);
+	});
+
+	it("keeps a published career total that is already higher than the seed", async () => {
+		const newer = structuredClone(SEED_FEED);
+		newer.updatedAt = "2026-10-07T15:00:00.000Z";
+		newer.prompts[0]!.items[5]!.metric = 70000;
+
+		const publish = await fetchWorker("/publish", {
+			method: "POST",
+			headers: {
+				Authorization: `Bearer ${TOKEN}`,
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(newer),
+		});
+		expect(publish.status).toBe(200);
+		const publishBody = (await publish.json()) as { updatedAt: string };
+
+		const feed = await fetchWorker("/prompts");
+		const body = (await feed.json()) as typeof SEED_FEED;
+		expect(body.prompts[0]?.items[4]?.metric).toBe(67273);
+		expect(body.prompts[0]?.items[5]?.metric).toBe(70000);
+		expect(body.updatedAt).toBe(publishBody.updatedAt);
 	});
 });
 

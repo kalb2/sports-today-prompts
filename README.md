@@ -58,7 +58,7 @@ The iMessage app already expects this exact shape:
 
 Until something is published, `GET /prompts` returns **Career Passing Yards** (`t10_nfl_003`): a coherent PFR-style top 10, ranks 1–10.
 
-Snapshot is **through the 2025 regular season** (approximate, from Pro-Football-Reference-style leaders):
+Snapshot is **Pro-Football-Reference career passing yards as of 2026-10-06**:
 
 | Rank | Player | Yards |
 | --- | --- | --- |
@@ -66,14 +66,14 @@ Snapshot is **through the 2025 regular season** (approximate, from Pro-Football-
 | 2 | Drew Brees | 80,358 |
 | 3 | Peyton Manning | 71,940 |
 | 4 | Brett Favre | 71,838 |
-| 5 | Aaron Rodgers | 66,274 |
-| 6 | Matthew Stafford | 64,516 |
+| 5 | Aaron Rodgers | 67,273 |
+| 6 | Matthew Stafford | 65,705 |
 | 7 | Ben Roethlisberger | 64,088 |
 | 8 | Philip Rivers | 63,984 |
 | 9 | Matt Ryan | 62,792 |
 | 10 | Dan Marino | 61,361 |
 
-Refresh these metrics from Notion / [PFR career passing yards](https://www.pro-football-reference.com/leaders/pass_yds_career.htm) before treating the seed as production truth. Active QBs (Rodgers, Stafford) move; Eli Manning is 11th on current lists.
+Source: [PFR career passing yards](https://www.pro-football-reference.com/leaders/pass_yds_career.htm). Active QBs (Rodgers, Stafford) move; Eli Manning is 11th. A published KV feed keeps its own players and order. For this prompt, a higher seed total for the same player replaces a lower stored total, so a stale Rodgers or Stafford number does not stay live after deploy.
 
 Canonical copy lives in `src/feed.ts`. A curl-friendly JSON file is at `src/seed-feed.json`.
 
