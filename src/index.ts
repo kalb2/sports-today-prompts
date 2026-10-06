@@ -1,5 +1,11 @@
 import { isAuthorized } from "./auth";
-import { cloneSeedFeed, readStoredFeed, writeStoredFeed, type PromptFeed } from "./feed";
+import {
+	applyFresherSeedMetrics,
+	cloneSeedFeed,
+	readStoredFeed,
+	writeStoredFeed,
+	type PromptFeed,
+} from "./feed";
 import { PRIVACY_HTML, SUPPORT_HTML } from "./pages";
 import { MAX_PUBLISH_BYTES, validateFeed } from "./validate";
 
@@ -48,7 +54,7 @@ async function resolveFeed(env: Env): Promise<PromptFeed> {
 	if (stored) {
 		const result = validateFeed(stored);
 		if (result.ok) {
-			return result.feed;
+			return applyFresherSeedMetrics(result.feed);
 		}
 	}
 	return cloneSeedFeed();
