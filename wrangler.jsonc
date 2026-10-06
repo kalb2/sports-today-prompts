@@ -7,7 +7,7 @@
 	"workers_dev": true,
 	"observability": {
 		"enabled": true,
-		"logs": { "head_sampling_rate": 1 },
+		"logs": { "head_sampling_rate": 1, "invocation_logs": false },
 		"traces": { "enabled": true, "head_sampling_rate": 0.01 }
 	},
 	// Local `wrangler dev` / Vitest use Miniflare (isolated local KV). No preview_id.

@@ -1,5 +1,6 @@
 import { isAuthorized } from "./auth";
 import { cloneSeedFeed, readStoredFeed, writeStoredFeed, type PromptFeed } from "./feed";
+import { PRIVACY_HTML, SUPPORT_HTML } from "./pages";
 import { MAX_PUBLISH_BYTES, validateFeed } from "./validate";
 
 const PUBLIC_CORS = {
@@ -27,6 +28,19 @@ function json(
 
 function publicJson(body: unknown, status = 200): Response {
 	return json(body, status, PUBLIC_CORS);
+}
+
+const HTML_HEADERS = {
+	"Content-Type": "text/html; charset=utf-8",
+	"Cache-Control": "public, max-age=3600",
+	"X-Content-Type-Options": "nosniff",
+	"Content-Security-Policy":
+		"default-src 'none'; style-src 'unsafe-inline'; img-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+	"Referrer-Policy": "no-referrer",
+} as const;
+
+function htmlPage(body: string | null): Response {
+	return new Response(body, { status: 200, headers: HTML_HEADERS });
 }
 
 async function resolveFeed(env: Env): Promise<PromptFeed> {
@@ -147,6 +161,20 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
 			return json({ error: "method_not_allowed" }, 405);
 		}
 		return handlePublish(request, env);
+	}
+
+	if (path === "/privacy" || path === "/support" || path === "/") {
+		if (request.method !== "GET" && request.method !== "HEAD") {
+			return json({ error: "method_not_allowed" }, 405);
+		}
+		if (path === "/") {
+			return new Response(null, {
+				status: 302,
+				headers: { Location: "/support" },
+			});
+		}
+		const page = path === "/privacy" ? PRIVACY_HTML : SUPPORT_HTML;
+		return htmlPage(request.method === "HEAD" ? null : page);
 	}
 
 	return json({ error: "not_found" }, 404);
