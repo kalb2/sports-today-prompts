@@ -122,6 +122,51 @@ describe("POST /publish", () => {
 	});
 });
 
+describe("public pages", () => {
+	it("returns privacy and support HTML", async () => {
+		for (const path of ["/privacy", "/support"]) {
+			const response = await fetchWorker(path);
+			expect(response.status).toBe(200);
+			expect(response.headers.get("Content-Type")).toContain("text/html");
+			expect(response.headers.get("Cache-Control")).toBe("public, max-age=3600");
+			expect(response.headers.get("X-Content-Type-Options")).toBe("nosniff");
+			expect(response.headers.get("Referrer-Policy")).toBe("no-referrer");
+			const body = await response.text();
+			expect(body).toContain("Ball Knowledge Games");
+			expect(body).toContain("k24corp@gmail.com");
+		}
+	});
+
+	it("returns an empty body for HEAD", async () => {
+		for (const path of ["/privacy", "/support"]) {
+			const response = await fetchWorker(path, { method: "HEAD" });
+			expect(response.status).toBe(200);
+			expect(response.headers.get("Content-Type")).toContain("text/html");
+			expect(await response.text()).toBe("");
+		}
+	});
+
+	it("rejects POST /privacy", async () => {
+		const response = await fetchWorker("/privacy", { method: "POST" });
+		expect(response.status).toBe(405);
+	});
+
+	it("redirects / to /support", async () => {
+		const response = await fetchWorker("/");
+		expect(response.status).toBe(302);
+		expect(response.headers.get("Location")).toBe("/support");
+	});
+
+	it("still returns the prompts feed JSON", async () => {
+		const response = await fetchWorker("/prompts");
+		expect(response.status).toBe(200);
+		expect(response.headers.get("Content-Type")).toContain("application/json");
+		const body = (await response.json()) as typeof SEED_FEED;
+		expect(body.version).toBe(1);
+		expect(body.prompts.length).toBeGreaterThan(0);
+	});
+});
+
 describe("unknown routes", () => {
 	it("returns 404 JSON", async () => {
 		const response = await fetchWorker("/nope");

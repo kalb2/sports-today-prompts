@@ -17,6 +17,7 @@ The iMessage app (build 65) is already wired to this contract and falls back to 
 | `GET` | `/prompts` | Public, CORS `*` | Feed JSON from KV key `feed:v1`. If missing/empty/invalid, return the seeded Career Passing Yards prompt (`t10_nfl_003`). |
 | `GET` | `/health` | Public | `{ "ok": true, "updatedAt": "<ISO-8601>" }` from the same resolved feed. |
 | `POST` | `/publish` | `Authorization: Bearer ${PUBLISH_TOKEN}` | Body = full feed JSON. Light validation, write to KV, return `{ "ok": true, "updatedAt" }`. |
+| `GET`, `HEAD` | `/`, `/privacy`, `/support` | Public pages | `/privacy` and `/support` return the Ball Knowledge Games privacy policy and support HTML (`text/html; charset=utf-8`, cached for 1 hour). `GET` and `HEAD` `/` return 302 to `/support`. Other methods on these paths return 405. |
 
 Unknown paths return `{ "error": "not_found" }` with status 404.
 
@@ -161,6 +162,7 @@ Build 65 already points at `/prompts`. Once the Worker is live, the stub fallbac
 
 ```
 src/index.ts              Worker router
+src/pages.ts              Privacy policy and support HTML
 src/feed.ts               Schema types, seed, KV helpers
 src/validate.ts           Light publish validation
 src/auth.ts               Timing-safe bearer check
@@ -184,6 +186,7 @@ wrangler.jsonc            Worker name, KV binding FEED
 ## Notes
 
 - **No Notion SDK / token in this Worker.** Notion stays on the editor/publish side.
+- **Invocation logs are disabled** (`observability.logs.invocation_logs: false`) so this Worker does not keep per-request records of who downloaded the prompts. Observability stays enabled, including traces. `console.log` / `console.error` calls do not include request data.
 - KV binding name is `FEED` → namespace `sports-today-prompts-feed` (`d3d54619d3df4701ba64ddb7bd98bc4f`). Key is `feed:v1`.
 - Worker name is `sports-today-prompts`.
 - `PUBLISH_TOKEN` is a Wrangler secret (optionally mirrored as a GitHub Actions secret so deploy can set it), not a `vars` value.
