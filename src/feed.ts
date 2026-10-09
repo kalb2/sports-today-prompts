@@ -24,6 +24,10 @@ export interface PromptFeed {
 	version: number;
 	updatedAt: string;
 	prompts: Prompt[];
+	/** Today's shared Top 10 board. Only kept when it names a Top 10 prompt in this feed. */
+	featuredTop10Id?: string;
+	/** Today's shared Keep 3 board. Only kept when it names an 8-item Keep 3 prompt in this feed. */
+	featuredKeep3Id?: string;
 }
 
 /**
