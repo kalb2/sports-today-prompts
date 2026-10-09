@@ -8,6 +8,54 @@ import {
 } from "./feed";
 import { PRIVACY_HTML, SUPPORT_HTML } from "./pages";
 import { MAX_PUBLISH_BYTES, validateFeed } from "./validate";
+import { acceptableDay, isKnownTopic, readConsensus, recordVote, validateVote } from "./blind";
+
+const VOTE_MAX_BYTES = 2048;
+
+/** Light per-connection limit. The address is only used as an in-memory limiter key, never stored. */
+async function voteAllowed(request: Request, env: Env): Promise<boolean> {
+	const limiter = env.VOTE_LIMITER;
+	if (!limiter) return true;
+	const key = request.headers.get("CF-Connecting-IP") ?? "unknown";
+	try {
+		const { success } = await limiter.limit({ key });
+		return success;
+	} catch {
+		return true;
+	}
+}
+
+async function handleBlindVote(request: Request, env: Env): Promise<Response> {
+	if (!(await voteAllowed(request, env))) {
+		return json({ error: "rate_limited" }, 429);
+	}
+	const raw = await request.text();
+	if (raw.length > VOTE_MAX_BYTES) {
+		return json({ error: "payload_too_large" }, 413);
+	}
+	let parsed: unknown;
+	try {
+		parsed = JSON.parse(raw);
+	} catch {
+		return json({ error: "invalid_json" }, 400);
+	}
+	const result = validateVote(parsed);
+	if (!result.ok) {
+		return json({ error: "invalid_vote", detail: result.error }, 400);
+	}
+	await recordVote(env.VOTES, result.vote);
+	const consensus = await readConsensus(env.VOTES, result.vote.day, result.vote.topicId);
+	return json({ ok: true, ...consensus });
+}
+
+async function handleBlindConsensus(url: URL, env: Env): Promise<Response> {
+	const day = url.searchParams.get("date");
+	const topicId = url.searchParams.get("topicId");
+	if (!acceptableDay(day) || !isKnownTopic(topicId)) {
+		return json({ error: "invalid_query" }, 400);
+	}
+	return json(await readConsensus(env.VOTES, day, topicId));
+}
 
 const PUBLIC_CORS = {
 	"Access-Control-Allow-Origin": "*",
@@ -160,6 +208,20 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
 		}
 		const feed = await resolveFeed(env);
 		return json({ ok: true, updatedAt: feed.updatedAt });
+	}
+
+	if (path === "/blind/vote") {
+		if (request.method !== "POST") {
+			return json({ error: "method_not_allowed" }, 405);
+		}
+		return handleBlindVote(request, env);
+	}
+
+	if (path === "/blind/consensus") {
+		if (request.method !== "GET") {
+			return json({ error: "method_not_allowed" }, 405);
+		}
+		return handleBlindConsensus(url, env);
 	}
 
 	if (path === "/publish") {
