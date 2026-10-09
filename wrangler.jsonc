@@ -16,5 +16,20 @@
 			"binding": "FEED",
 			"id": "d3d54619d3df4701ba64ddb7bd98bc4f"
 		}
+	],
+	"d1_databases": [
+		{
+			"binding": "VOTES",
+			"database_name": "ball-knowledge-votes",
+			"database_id": "939e1258-6150-41ab-b4ba-f8cde43b0165"
+		}
+	],
+	// Light abuse guard for POST /blind/vote.
+	"ratelimits": [
+		{
+			"name": "VOTE_LIMITER",
+			"namespace_id": "1001",
+			"simple": { "limit": 30, "period": 60 }
+		}
 	]
 }

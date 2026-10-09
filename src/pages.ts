@@ -4,7 +4,7 @@ export const PRIVACY_HTML = `<!doctype html>
 <style>body{font:17px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;max-width:720px;margin:0 auto;padding:24px 20px 64px;color:#14213d;background:#f6f7fb}h1{font-size:28px;line-height:1.2}h2{font-size:20px;margin-top:28px}a{color:#007f99}code{font-size:14px;word-break:break-all}footer{margin-top:40px;font-size:14px;color:#5b6475}</style>
 </head><body>
 <h1>Ball Knowledge Games – Privacy Policy</h1>
-<p>Effective October 5, 2026</p>
+<p>Effective October 8, 2026</p>
 <p>Ball Knowledge Games ("Ball Knowledge", "the app") is made by Kaleb Jensen, an independent developer in the United States ("I", "me"). This policy explains what happens to information when you use the iPhone app. Contact: <a href="mailto:k24corp@gmail.com">k24corp@gmail.com</a>.</p>
 <h2>The short version</h2>
 <ul>
@@ -13,6 +13,7 @@ export const PRIVACY_HTML = `<!doctype html>
 <li>The app has no ads, no analytics, no crash-reporting SDK, and no tracking.</li>
 <li>Your game progress is saved on your iPhone only.</li>
 <li>The app downloads a public list of trivia prompts. That download does not include anything about you.</li>
+<li>When you finish a Blind Ranking, the app sends your five-pick order with a random install code so it can show everyone's average ranking. It is not linked to your name, Apple ID, or contacts.</li>
 </ul>
 <h2>Information saved on your device</h2>
 <p>The app saves these items in its own storage on your iPhone:</p>
@@ -29,6 +30,9 @@ export const PRIVACY_HTML = `<!doctype html>
 <p>This is an ordinary HTTPS request. It does not contain an account, a device identifier, an advertising identifier, your guesses, or your scores. Like any internet request, it reveals your network's IP address and basic technical details, such as the app's version and your iOS version, to the server so it can send a response.</p>
 <p>The server runs on Cloudflare Workers. I have turned off per-request logging for this service, so I do not keep records of who downloaded the prompts. Cloudflare, as the hosting provider, processes the request to deliver it and to protect the service from abuse. Cloudflare may keep limited operational and security data under its own privacy policy (<a href="https://www.cloudflare.com/privacypolicy/">https://www.cloudflare.com/privacypolicy/</a>). I do not use this data to identify you, build a profile, advertise, or track you.</p>
 <p>If the download fails, for example in Airplane Mode, the app uses prompts already saved on your iPhone.</p>
+<h2>Blind Ranking community ranking</h2>
+<p>When you finish a Blind Ranking, the app sends my server the date, the topic, the order you placed the five picks in, and a random code the app created when it was installed. The random code lets the server count one ranking per install per topic per day; a later ranking from the same install replaces the earlier one. The server stores only a one-way scrambled version of that code, not the code itself, together with the date, topic, and order. It does not receive your name, Apple ID, contacts, Messages conversations, location, or an advertising identifier, and I do not link these rankings to you.</p>
+<p>The server combines rankings into an average order for each topic. That average, and the number of rankings, are shown to everyone once a topic has at least 10 rankings that day. Individual rankings are never shown. The rankings are stored with Cloudflare D1 and are used only for this feature.</p>
 <h2>Information you choose to send me</h2>
 <p>If you email support, I receive your email address and anything you put in the message. I use it only to answer you. I do not add you to a mailing list. I delete support emails when they are no longer needed, and you can ask me to delete yours at any time.</p>
 <h2>Apple</h2>
@@ -36,7 +40,7 @@ export const PRIVACY_HTML = `<!doctype html>
 <h2>Third parties</h2>
 <p>The only outside service involved in running the app is Cloudflare, which hosts the prompt server. No third-party SDKs are built into the app. If I ever share data with a third party, that party will be required to protect it as well as this policy does, and this policy will be updated first.</p>
 <h2>Keeping and deleting data</h2>
-<p>I have no account data or gameplay data about you on any server, so there is nothing for me to delete there. To delete everything the app has saved, delete the app from your iPhone. To delete a support email, write to <a href="mailto:k24corp@gmail.com">k24corp@gmail.com</a>.</p>
+<p>I have no account data about you on any server. Blind Ranking orders are stored only with the scrambled random code described above, which I cannot connect back to you. To delete everything the app has saved, delete the app from your iPhone. To delete a support email, write to <a href="mailto:k24corp@gmail.com">k24corp@gmail.com</a>.</p>
 <h2>Your choices and consent</h2>
 <p>The app does not ask for permission to use your camera, photos, microphone, location, contacts, or tracking, because it does not use them. You can stop the prompt download by turning off Wi-Fi and cellular data for the app in iPhone Settings. The app will keep working with saved prompts.</p>
 <h2>Children</h2>
