@@ -75,6 +75,15 @@ function validatePrompt(prompt: unknown, index: number): string | null {
 	return null;
 }
 
+const TOP10_FORMATS = new Set(["top_10_guess", "top_10_countdown", "top10Guess"]);
+const KEEP3_FORMATS = new Set(["keep_3_cut_5", "keep3Cut5"]);
+
+function featuredId(raw: unknown): string | null {
+	if (typeof raw !== "string") return null;
+	const id = raw.trim();
+	return id === "" || id.length > 128 ? null : id;
+}
+
 export function validateFeed(value: unknown): ValidationResult {
 	if (!isRecord(value)) {
 		return { ok: false, error: "body must be a JSON object" };
@@ -134,6 +143,20 @@ export function validateFeed(value: unknown): ValidationResult {
 				: new Date().toISOString(),
 		prompts,
 	};
+
+	// Featured ids are optional. One that doesn't match a prompt of the right
+	// format is dropped, not rejected, so phones fall back to their date pick.
+	const top10Id = featuredId(value.featuredTop10Id);
+	if (top10Id && prompts.some((p) => p.id === top10Id && TOP10_FORMATS.has(String(p.format)))) {
+		feed.featuredTop10Id = top10Id;
+	}
+	const keep3Id = featuredId(value.featuredKeep3Id);
+	if (
+		keep3Id &&
+		prompts.some((p) => p.id === keep3Id && KEEP3_FORMATS.has(String(p.format)) && p.items.length === 8)
+	) {
+		feed.featuredKeep3Id = keep3Id;
+	}
 
 	return { ok: true, feed };
 }
