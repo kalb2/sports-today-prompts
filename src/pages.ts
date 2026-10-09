@@ -4,7 +4,7 @@ export const PRIVACY_HTML = `<!doctype html>
 <style>body{font:17px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;max-width:720px;margin:0 auto;padding:24px 20px 64px;color:#14213d;background:#f6f7fb}h1{font-size:28px;line-height:1.2}h2{font-size:20px;margin-top:28px}a{color:#007f99}code{font-size:14px;word-break:break-all}footer{margin-top:40px;font-size:14px;color:#5b6475}</style>
 </head><body>
 <h1>Ball Knowledge Games – Privacy Policy</h1>
-<p>Effective October 8, 2026</p>
+<p>Effective October 9, 2026</p>
 <p>Ball Knowledge Games ("Ball Knowledge", "the app") is made by Kaleb Jensen, an independent developer in the United States ("I", "me"). This policy explains what happens to information when you use the iPhone app. Contact: <a href="mailto:k24corp@gmail.com">k24corp@gmail.com</a>.</p>
 <h2>The short version</h2>
 <ul>
@@ -21,9 +21,11 @@ export const PRIVACY_HTML = `<!doctype html>
 <li>whether you have played today's daily board, and the date (Mountain Time);</li>
 <li>a daily board or Group Room round you have started but not finished;</li>
 <li>the prompt list it last downloaded, so the app works without a connection;</li>
-<li>whether you have already seen the How to Play screens.</li>
+<li>whether you have already seen the How to Play screens;</li>
+<li>a 0–100 rating for each sport you have played, worked out on your iPhone from your scored boards.</li>
 </ul>
-<p>Group Room seats are labeled Player 1 through Player 4. The app does not ask for names. The app does not send any of this information to me or anyone else. It stays on the device. If iCloud or iTunes backups are turned on for your iPhone, Apple may include the app's storage in that backup under Apple's own terms. Deleting the app deletes all of it.</p>
+<p>When you send a game bubble in Messages, the bubble also carries your per-sport ratings and the name you chose, if any, so the people in that conversation can compare. That goes through Apple's Messages to that conversation only; it is not sent to me.</p>
+<p>Group Room seats are labeled Player 1 through Player 4. A display name, if you set one for friend challenges, is saved on your iPhone. The app does not send any of this information to me or anyone else. It stays on the device. If iCloud or iTunes backups are turned on for your iPhone, Apple may include the app's storage in that backup under Apple's own terms. Deleting the app deletes all of it.</p>
 <h2>The prompt download</h2>
 <p>When you open the app or start a round, it asks my prompt server for the current list of prompts:</p>
 <p><code>https://sports-today-prompts.k24corp.workers.dev/prompts</code></p>

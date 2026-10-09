@@ -47,3 +47,24 @@ describe("featured ids", () => {
 		expect("featuredTop10Id" in result.feed).toBe(false);
 	});
 });
+
+describe("sport field", () => {
+	it("normalizes case and spacing on read", async () => {
+		const { validateFeed } = await import("../src/validate");
+		const prompt = { ...SEED_FEED.prompts[0], sport: " NFL " };
+		const result = validateFeed({ ...SEED_FEED, prompts: [prompt] });
+		expect(result.ok).toBe(true);
+		if (!result.ok) return;
+		expect(result.feed.prompts[0].sport).toBe("nfl");
+	});
+
+	it("flags unknown sports for publish", async () => {
+		const { validateFeed, unknownSportError } = await import("../src/validate");
+		const ok = validateFeed(SEED_FEED);
+		expect(ok.ok && unknownSportError(ok.feed)).toBe(null);
+		const bad = validateFeed({ ...SEED_FEED, prompts: [{ ...SEED_FEED.prompts[0], sport: "golf" }] });
+		expect(bad.ok).toBe(true);
+		if (!bad.ok) return;
+		expect(unknownSportError(bad.feed)).toContain("sport must be one of");
+	});
+});

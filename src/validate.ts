@@ -75,6 +75,19 @@ function validatePrompt(prompt: unknown, index: number): string | null {
 	return null;
 }
 
+/** Sports the app can rate. Matches BKSport in the app. */
+export const SPORTS = new Set(["nfl", "nba", "mlb", "cfb", "cbb", "nhl", "soccer"]);
+
+/** New publishes must use a known sport. Stored feeds are still served if an old row has another value. */
+export function unknownSportError(feed: PromptFeed): string | null {
+	for (const [index, prompt] of feed.prompts.entries()) {
+		if (!SPORTS.has(String(prompt.sport))) {
+			return `prompts[${index}].sport must be one of ${[...SPORTS].join(", ")}`;
+		}
+	}
+	return null;
+}
+
 const TOP10_FORMATS = new Set(["top_10_guess", "top_10_countdown", "top10Guess"]);
 const KEEP3_FORMATS = new Set(["keep_3_cut_5", "keep3Cut5"]);
 
@@ -125,7 +138,7 @@ export function validateFeed(value: unknown): ValidationResult {
 		return {
 			id: record.id,
 			format: record.format,
-			sport: record.sport,
+			sport: String(record.sport).trim().toLowerCase(),
 			title: record.title,
 			promptText: record.promptText,
 			metricLabel: typeof record.metricLabel === "string" ? record.metricLabel : "yds",

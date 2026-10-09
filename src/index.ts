@@ -7,7 +7,7 @@ import {
 	type PromptFeed,
 } from "./feed";
 import { PRIVACY_HTML, SUPPORT_HTML } from "./pages";
-import { MAX_PUBLISH_BYTES, validateFeed } from "./validate";
+import { MAX_PUBLISH_BYTES, unknownSportError, validateFeed } from "./validate";
 import { acceptableDay, isKnownTopic, readConsensus, recordVote, validateVote } from "./blind";
 
 const VOTE_MAX_BYTES = 2048;
@@ -145,6 +145,10 @@ async function handlePublish(request: Request, env: Env): Promise<Response> {
 	const result = validateFeed(parsed);
 	if (!result.ok) {
 		return json({ error: "invalid_feed", detail: result.error }, 400);
+	}
+	const sportError = unknownSportError(result.feed);
+	if (sportError) {
+		return json({ error: "invalid_feed", detail: sportError }, 400);
 	}
 
 	const updatedAt = new Date().toISOString();
