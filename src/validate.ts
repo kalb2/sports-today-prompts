@@ -1,4 +1,15 @@
-import { FEED_VERSION, type Prompt, type PromptFeed, type PromptItem } from "./feed";
+import {
+	FEED_VERSION,
+	type BlindBoard,
+	type FactOrCapBoard,
+	type FeaturedMap,
+	type FeedBoards,
+	type HigherLowerBoard,
+	type Prompt,
+	type PromptFeed,
+	type PromptItem,
+	type WhoIsWhoBoard,
+} from "./feed";
 
 export const MAX_PUBLISH_BYTES = 512_000;
 
@@ -12,6 +23,93 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function isFiniteNumber(value: unknown): value is number {
 	return typeof value === "number" && Number.isFinite(value);
+}
+
+function isDifficulty(value: unknown): value is number {
+	return typeof value === "number" && Number.isInteger(value) && value >= 1 && value <= 5;
+}
+
+function nonEmpty(value: unknown): value is string {
+	return typeof value === "string" && value.trim() !== "";
+}
+
+type BoardCheck = (board: Record<string, unknown>) => string | null;
+
+function itemPair(value: unknown): value is { id: string; label: string } {
+	return isRecord(value) && nonEmpty(value.id) && nonEmpty(value.label);
+}
+
+const BOARD_CHECKS: Record<keyof FeedBoards, BoardCheck> = {
+	factOrCap: (b) => {
+		if (!nonEmpty(b.claim)) return "claim must be a non-empty string";
+		if (!nonEmpty(b.explanation)) return "explanation must be a non-empty string";
+		if (typeof b.correctIsFact !== "boolean") return "correctIsFact must be a boolean";
+		return null;
+	},
+	higherLower: (b) => {
+		for (const key of ["subject", "metricUnit", "anchorLabel", "anchorMetric", "challengeLabel", "challengeMetric", "explanation"]) {
+			if (!nonEmpty(b[key])) return `${key} must be a non-empty string`;
+		}
+		if (typeof b.correctIsHigher !== "boolean") return "correctIsHigher must be a boolean";
+		return null;
+	},
+	whoIsWho: (b) => {
+		if (!nonEmpty(b.subject)) return "subject must be a non-empty string";
+		if (!nonEmpty(b.why)) return "why must be a non-empty string";
+		if (!itemPair(b.boxScore) || !itemPair(b.consensus)) return "boxScore and consensus must be {id, label}";
+		if ((b.boxScore as { id: string }).id === (b.consensus as { id: string }).id) return "boxScore and consensus ids must differ";
+		if (!Array.isArray(b.lines) || b.lines.length < 3 || b.lines.length > 8) return "lines must have 3-8 rows";
+		for (const [i, line] of b.lines.entries()) {
+			if (!isRecord(line) || !nonEmpty(line.label) || !nonEmpty(line.boxScore) || !nonEmpty(line.consensus)) {
+				return `lines[${i}] needs label, boxScore, consensus`;
+			}
+			if (line.leader !== "boxScore" && line.leader !== "consensus") return `lines[${i}].leader must be boxScore or consensus`;
+		}
+		return null;
+	},
+	blindTop5: (b) => {
+		if (!nonEmpty(b.body)) return "body must be a non-empty string";
+		if (!Array.isArray(b.items) || b.items.length !== 5 || !b.items.every(itemPair)) return "items must be 5 {id, label}";
+		if (new Set((b.items as { id: string }[]).map((i) => i.id)).size !== 5) return "items ids must be unique";
+		return null;
+	},
+};
+
+/** Every board shape is checked; one bad board rejects the publish so nothing half-valid goes live. */
+function validateBoards(raw: unknown): { ok: true; boards: FeedBoards } | { ok: false; error: string } {
+	if (raw === undefined) return { ok: true, boards: {} };
+	if (!isRecord(raw)) return { ok: false, error: "boards must be an object" };
+	const boards: FeedBoards = {};
+	for (const [game, check] of Object.entries(BOARD_CHECKS) as [keyof FeedBoards, BoardCheck][]) {
+		const list = raw[game];
+		if (list === undefined) continue;
+		if (!Array.isArray(list)) return { ok: false, error: `boards.${game} must be an array` };
+		const ids = new Set<string>();
+		for (const [i, board] of list.entries()) {
+			const where = `boards.${game}[${i}]`;
+			if (!isRecord(board)) return { ok: false, error: `${where} must be an object` };
+			if (!nonEmpty(board.id) || board.id.length > 128) return { ok: false, error: `${where}.id must be a non-empty string` };
+			if (ids.has(board.id)) return { ok: false, error: `${where}.id duplicate ${board.id}` };
+			ids.add(board.id);
+			if (!nonEmpty(board.sport)) return { ok: false, error: `${where}.sport must be a non-empty string` };
+			if (!nonEmpty(board.title)) return { ok: false, error: `${where}.title must be a non-empty string` };
+			if (board.difficulty !== undefined && !isDifficulty(board.difficulty)) {
+				return { ok: false, error: `${where}.difficulty must be an integer 1-5` };
+			}
+			const problem = check(board);
+			if (problem) return { ok: false, error: `${where}.${problem}` };
+		}
+		const normalized = list.map((board) => ({
+			...(board as Record<string, unknown>),
+			sport: String((board as Record<string, unknown>).sport).trim().toLowerCase(),
+		}));
+		(boards as Record<string, unknown>)[game] = normalized as unknown as
+			| FactOrCapBoard[]
+			| HigherLowerBoard[]
+			| WhoIsWhoBoard[]
+			| BlindBoard[];
+	}
+	return { ok: true, boards };
 }
 
 function validateItem(item: unknown, index: number): string | null {
@@ -63,6 +161,9 @@ function validatePrompt(prompt: unknown, index: number): string | null {
 	if (prompt.acceptAliases !== undefined && typeof prompt.acceptAliases !== "boolean") {
 		return `prompts[${index}].acceptAliases must be a boolean`;
 	}
+	if (prompt.difficulty !== undefined && !isDifficulty(prompt.difficulty)) {
+		return `prompts[${index}].difficulty must be an integer 1-5`;
+	}
 	if (!Array.isArray(prompt.items) || prompt.items.length === 0) {
 		return `prompts[${index}].items must be a non-empty array`;
 	}
@@ -83,6 +184,13 @@ export function unknownSportError(feed: PromptFeed): string | null {
 	for (const [index, prompt] of feed.prompts.entries()) {
 		if (!SPORTS.has(String(prompt.sport))) {
 			return `prompts[${index}].sport must be one of ${[...SPORTS].join(", ")}`;
+		}
+	}
+	for (const [game, list] of Object.entries(feed.boards ?? {})) {
+		for (const [index, board] of ((list ?? []) as { sport: string }[]).entries()) {
+			if (!SPORTS.has(String(board.sport))) {
+				return `boards.${game}[${index}].sport must be one of ${[...SPORTS].join(", ")}`;
+			}
 		}
 	}
 	return null;
@@ -145,8 +253,15 @@ export function validateFeed(value: unknown): ValidationResult {
 			strikesAllowed: typeof record.strikesAllowed === "number" ? record.strikesAllowed : 3,
 			acceptAliases: typeof record.acceptAliases === "boolean" ? record.acceptAliases : true,
 			items,
+			...(isDifficulty(record.difficulty) ? { difficulty: record.difficulty } : {}),
 		} as Prompt;
 	});
+
+	const boardsResult = validateBoards(value.boards);
+	if (!boardsResult.ok) {
+		return { ok: false, error: boardsResult.error };
+	}
+	const boards = boardsResult.boards;
 
 	const feed: PromptFeed = {
 		version: FEED_VERSION,
@@ -169,6 +284,32 @@ export function validateFeed(value: unknown): ValidationResult {
 		prompts.some((p) => p.id === keep3Id && KEEP3_FORMATS.has(String(p.format)) && p.items.length === 8)
 	) {
 		feed.featuredKeep3Id = keep3Id;
+	}
+
+	if (Object.keys(boards).length > 0) {
+		feed.boards = boards;
+	}
+
+	// featured: per-game ids. Same rule as the legacy fields: a stale id is dropped, not fatal.
+	if (isRecord(value.featured)) {
+		const featured: FeaturedMap = {};
+		const hasPrompt = (id: string, formats: Set<string>, count?: number) =>
+			prompts.some((p) => p.id === id && formats.has(String(p.format)) && (count === undefined || p.items.length === count));
+		const hasBoard = (game: keyof FeedBoards, id: string) =>
+			(boards[game] as { id: string }[] | undefined)?.some((b) => b.id === id) ?? false;
+		for (const [game, rawId] of Object.entries(value.featured)) {
+			const id = featuredId(rawId);
+			if (!id) continue;
+			const ok =
+				game === "top10Guess" ? hasPrompt(id, TOP10_FORMATS) :
+				game === "keep3Cut5" ? hasPrompt(id, KEEP3_FORMATS, 8) :
+				game in BOARD_CHECKS ? hasBoard(game as keyof FeedBoards, id) : false;
+			if (ok) featured[game as keyof FeaturedMap] = id;
+		}
+		// Keep the legacy fields in step so current app builds see the same boards.
+		if (featured.top10Guess && !feed.featuredTop10Id) feed.featuredTop10Id = featured.top10Guess;
+		if (featured.keep3Cut5 && !feed.featuredKeep3Id) feed.featuredKeep3Id = featured.keep3Cut5;
+		if (Object.keys(featured).length > 0) feed.featured = featured;
 	}
 
 	return { ok: true, feed };

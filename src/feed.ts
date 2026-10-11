@@ -18,7 +18,65 @@ export interface Prompt {
 	strikesAllowed: number;
 	acceptAliases: boolean;
 	items: PromptItem[];
+	/** 1–5. Optional; older feeds and builds ignore it. */
+	difficulty?: number;
 }
+
+/** Shared optional fields on every non-prompt board. */
+interface BoardBase {
+	id: string;
+	sport: string;
+	title: string;
+	difficulty?: number;
+}
+
+export interface FactOrCapBoard extends BoardBase {
+	claim: string;
+	explanation: string;
+	correctIsFact: boolean;
+}
+
+export interface HigherLowerBoard extends BoardBase {
+	subject: string;
+	metricUnit: string;
+	anchorLabel: string;
+	anchorMetric: string;
+	challengeLabel: string;
+	challengeMetric: string;
+	correctIsHigher: boolean;
+	explanation: string;
+}
+
+export interface WhoIsWhoLine {
+	label: string;
+	boxScore: string;
+	consensus: string;
+	leader: "boxScore" | "consensus";
+}
+
+export interface WhoIsWhoBoard extends BoardBase {
+	subject: string;
+	boxScore: { id: string; label: string };
+	consensus: { id: string; label: string };
+	lines: WhoIsWhoLine[];
+	why: string;
+}
+
+export interface BlindBoard extends BoardBase {
+	body: string;
+	items: { id: string; label: string }[];
+}
+
+/** Boards for the four games that are not in `prompts`. Additive: old builds ignore it. */
+export interface FeedBoards {
+	factOrCap?: FactOrCapBoard[];
+	higherLower?: HigherLowerBoard[];
+	whoIsWho?: WhoIsWhoBoard[];
+	blindTop5?: BlindBoard[];
+}
+
+/** Today's board id per game, keyed by app format id. */
+export type FeaturedMap = Partial<Record<"top10Guess" | "keep3Cut5" | "factOrCap" | "higherLower" | "whoIsWho" | "blindTop5", string>>;
 
 export interface PromptFeed {
 	version: number;
@@ -28,6 +86,9 @@ export interface PromptFeed {
 	featuredTop10Id?: string;
 	/** Today's shared Keep 3 board. Only kept when it names an 8-item Keep 3 prompt in this feed. */
 	featuredKeep3Id?: string;
+	/** All six games' featured ids. Each id names a board of that game in this feed. */
+	featured?: FeaturedMap;
+	boards?: FeedBoards;
 }
 
 /**
