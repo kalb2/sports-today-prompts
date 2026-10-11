@@ -8,7 +8,19 @@ import {
 } from "./feed";
 import { PRIVACY_HTML, SUPPORT_HTML } from "./pages";
 import { MAX_PUBLISH_BYTES, unknownSportError, validateFeed } from "./validate";
-import { acceptableDay, isKnownTopic, readConsensus, recordVote, validateVote } from "./blind";
+import { acceptableDay, isKnownTopic, readConsensus, recordVote, validateVote, type TopicMap } from "./blind";
+import { BLIND_TOPICS } from "./blind-topics";
+
+/** Blind Ranking boards from the feed, so a Notion-only topic still takes votes. */
+async function feedTopics(env: Env, topicId: unknown): Promise<TopicMap> {
+	if (typeof topicId !== "string" || Object.hasOwn(BLIND_TOPICS, topicId)) return {};
+	const feed = await resolveFeed(env);
+	const out: Record<string, string[]> = {};
+	for (const board of feed.boards?.blindTop5 ?? []) {
+		out[board.id] = board.items.map((item) => item.id);
+	}
+	return out;
+}
 
 const VOTE_MAX_BYTES = 2048;
 
@@ -39,22 +51,25 @@ async function handleBlindVote(request: Request, env: Env): Promise<Response> {
 	} catch {
 		return json({ error: "invalid_json" }, 400);
 	}
-	const result = validateVote(parsed);
+	const topicId = (parsed as { topicId?: unknown } | null)?.topicId;
+	const extra = await feedTopics(env, topicId);
+	const result = validateVote(parsed, Date.now(), extra);
 	if (!result.ok) {
 		return json({ error: "invalid_vote", detail: result.error }, 400);
 	}
 	await recordVote(env.VOTES, result.vote);
-	const consensus = await readConsensus(env.VOTES, result.vote.day, result.vote.topicId);
+	const consensus = await readConsensus(env.VOTES, result.vote.day, result.vote.topicId, extra);
 	return json({ ok: true, ...consensus });
 }
 
 async function handleBlindConsensus(url: URL, env: Env): Promise<Response> {
 	const day = url.searchParams.get("date");
 	const topicId = url.searchParams.get("topicId");
-	if (!acceptableDay(day) || !isKnownTopic(topicId)) {
+	const extra = await feedTopics(env, topicId);
+	if (!acceptableDay(day) || !isKnownTopic(topicId, extra)) {
 		return json({ error: "invalid_query" }, 400);
 	}
-	return json(await readConsensus(env.VOTES, day, topicId));
+	return json(await readConsensus(env.VOTES, day, topicId, extra));
 }
 
 const PUBLIC_CORS = {

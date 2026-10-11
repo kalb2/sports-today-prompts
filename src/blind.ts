@@ -38,7 +38,20 @@ export function acceptableDay(day: unknown, now = Date.now()): day is string {
 	return [-1, 0, 1].some((offset) => denverDay(offset, now) === day);
 }
 
-export function validateVote(value: unknown, now = Date.now()): { ok: true; vote: BlindVote } | { ok: false; error: string } {
+export type TopicMap = Record<string, readonly string[]>;
+
+/** Item ids for a topic: the bundled list first, then Blind Ranking boards from the live feed. */
+export function topicItems(topicId: string, extra: TopicMap = {}): readonly string[] | undefined {
+	if (Object.hasOwn(BLIND_TOPICS, topicId)) return BLIND_TOPICS[topicId];
+	if (Object.hasOwn(extra, topicId)) return extra[topicId];
+	return undefined;
+}
+
+export function validateVote(
+	value: unknown,
+	now = Date.now(),
+	extra: TopicMap = {},
+): { ok: true; vote: BlindVote } | { ok: false; error: string } {
 	if (typeof value !== "object" || value === null || Array.isArray(value)) {
 		return { ok: false, error: "body must be a JSON object" };
 	}
@@ -46,13 +59,14 @@ export function validateVote(value: unknown, now = Date.now()): { ok: true; vote
 	const day = record.date;
 	if (!acceptableDay(day, now)) return { ok: false, error: "date" };
 	const topicId = record.topicId;
-	if (typeof topicId !== "string" || !Object.hasOwn(BLIND_TOPICS, topicId)) {
+	const topic = typeof topicId === "string" ? topicItems(topicId, extra) : undefined;
+	if (typeof topicId !== "string" || !topic) {
 		return { ok: false, error: "topicId" };
 	}
 	const deviceId = record.deviceId;
 	if (typeof deviceId !== "string" || !UUID_RE.test(deviceId)) return { ok: false, error: "deviceId" };
 	const order = record.order;
-	const allowed = new Set(BLIND_TOPICS[topicId]);
+	const allowed = new Set(topic);
 	if (
 		!Array.isArray(order) ||
 		order.length !== allowed.size ||
@@ -82,8 +96,8 @@ export async function recordVote(db: D1Database, vote: BlindVote): Promise<void>
 }
 
 /** Average 1-based position per item. Ties go to the topic's bundled item order. */
-export function computeConsensus(topicId: string, orders: string[][]): Consensus {
-	const items = BLIND_TOPICS[topicId] ?? [];
+export function computeConsensus(topicId: string, orders: string[][], extra: TopicMap = {}): Consensus {
+	const items = topicItems(topicId, extra) ?? [];
 	const count = orders.length;
 	if (count < MIN_CONSENSUS_VOTES) return { count, minCount: MIN_CONSENSUS_VOTES };
 	const sums = new Map(items.map((id) => [id, 0]));
@@ -101,7 +115,7 @@ export function computeConsensus(topicId: string, orders: string[][]): Consensus
 	return { count, minCount: MIN_CONSENSUS_VOTES, order, avg };
 }
 
-export async function readConsensus(db: D1Database, day: string, topicId: string): Promise<Consensus> {
+export async function readConsensus(db: D1Database, day: string, topicId: string, extra: TopicMap = {}): Promise<Consensus> {
 	const rows = await db
 		.prepare("SELECT ord FROM blind_votes WHERE day = ?1 AND topic = ?2")
 		.bind(day, topicId)
@@ -115,9 +129,9 @@ export async function readConsensus(db: D1Database, day: string, topicId: string
 			// Skip a malformed row rather than failing the whole read.
 		}
 	}
-	return computeConsensus(topicId, orders);
+	return computeConsensus(topicId, orders, extra);
 }
 
-export function isKnownTopic(topicId: unknown): topicId is string {
-	return typeof topicId === "string" && Object.hasOwn(BLIND_TOPICS, topicId);
+export function isKnownTopic(topicId: unknown, extra: TopicMap = {}): topicId is string {
+	return typeof topicId === "string" && topicItems(topicId, extra) !== undefined;
 }

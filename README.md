@@ -54,6 +54,23 @@ The iMessage app already expects this exact shape:
 
 `POST /publish` overwrites `updatedAt` with the Worker clock so `/health` tracks the last successful publish.
 
+## Six-game feed (additive, Oct 2026)
+
+`/prompts` may also carry, all optional so current app builds keep working:
+
+- `difficulty` (1–5) on any prompt or board.
+- `boards` — boards for the four games that are not in `prompts`:
+  - `factOrCap[]`: `id, sport, title, claim, explanation, correctIsFact`
+  - `higherLower[]`: `id, sport, title, subject, metricUnit, anchorLabel, anchorMetric, challengeLabel, challengeMetric, correctIsHigher, explanation`
+  - `whoIsWho[]`: `id, sport, title, subject, boxScore{id,label}, consensus{id,label}, lines[{label, boxScore, consensus, leader: boxScore|consensus}] (3–8), why`
+  - `blindTop5[]`: `id, sport, title, body, items[{id,label}] (exactly 5)`
+- `featured` — today's id per game: `top10Guess, keep3Cut5, factOrCap, higherLower, whoIsWho, blindTop5`.
+  Top 10 / Keep 3 ids point into `prompts`; the rest into `boards`. A stale id is dropped (phones fall back),
+  and `featuredTop10Id` / `featuredKeep3Id` are filled from it when absent.
+
+Publish rejects a malformed board or an unknown sport. `/blind/vote` and `/blind/consensus` accept the
+bundled topics plus any `boards.blindTop5` topic in the live feed.
+
 ## Seed (KV-empty fallback)
 
 Until something is published, `GET /prompts` returns **Career Passing Yards** (`t10_nfl_003`): a coherent PFR-style top 10, ranks 1–10.
