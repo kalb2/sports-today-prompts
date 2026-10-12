@@ -121,6 +121,15 @@ async function resolveFeed(env: Env): Promise<PromptFeed> {
 		if (result.ok) {
 			return applyFresherSeedMetrics(result.feed);
 		}
+		// A bad staged day must never take down today's boards: drop `days` and try again.
+		if ((stored as { days?: unknown }).days !== undefined) {
+			const { days: _bad, ...rest } = stored as PromptFeed;
+			const retry = validateFeed(rest);
+			if (retry.ok) {
+				console.error(JSON.stringify({ message: "stored_days_invalid", error: result.error }));
+				return applyFresherSeedMetrics(retry.feed);
+			}
+		}
 	}
 	return cloneSeedFeed();
 }
