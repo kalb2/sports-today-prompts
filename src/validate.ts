@@ -1,3 +1,4 @@
+import { validateDays } from "./days";
 import {
 	FEED_VERSION,
 	type BlindBoard,
@@ -310,6 +311,12 @@ export function validateFeed(value: unknown): ValidationResult {
 		if (featured.top10Guess && !feed.featuredTop10Id) feed.featuredTop10Id = featured.top10Guess;
 		if (featured.keep3Cut5 && !feed.featuredKeep3Id) feed.featuredKeep3Id = featured.keep3Cut5;
 		if (Object.keys(featured).length > 0) feed.featured = featured;
+	}
+
+	if (value.days !== undefined) {
+		const daysResult = validateDays(value.days, feed);
+		if (!daysResult.ok) return { ok: false, error: daysResult.error };
+		if (Object.keys(daysResult.days).length > 0) feed.days = daysResult.days;
 	}
 
 	return { ok: true, feed };
