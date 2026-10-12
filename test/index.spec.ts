@@ -59,7 +59,7 @@ describe("GET /health", () => {
 		const response = await fetchWorker("/health");
 		expect(response.status).toBe(200);
 		const body = (await response.json()) as { ok: boolean; updatedAt: string };
-		expect(body).toEqual({ ok: true, updatedAt: SEED_FEED.updatedAt });
+		expect(body).toMatchObject({ ok: true, updatedAt: SEED_FEED.updatedAt });
 	});
 });
 
@@ -271,5 +271,37 @@ describe("unknown routes", () => {
 		expect(response.status).toBe(404);
 		const body = (await response.json()) as { error: string };
 		expect(body.error).toBe("not_found");
+	});
+});
+
+describe("/stage-day", () => {
+	const top10Id = SEED_FEED.prompts[0]!.id;
+	const auth = { Authorization: `Bearer ${TOKEN}`, "Content-Type": "application/json" };
+	it("needs auth", async () => {
+		const r = await fetchWorker("/stage-day", { method: "POST", body: "{}" });
+		expect(r.status).toBe(401);
+	});
+	it("stages a future day without changing today's top level, keeps it across /publish, and deletes on hold", async () => {
+		const blind = { id: "blind-stage", sport: "nba", title: "T", body: "T",
+			items: ["a", "b", "c", "d", "e"].map((x) => ({ id: `s-${x}`, label: x })) };
+		const staged = await fetchWorker("/stage-day", { method: "POST", headers: auth,
+			body: JSON.stringify({ date: "2099-01-02", entry: { featured: { top10Guess: top10Id, blindTop5: "blind-stage" }, boards: { blindTop5: [blind] } } }) });
+		expect(staged.status).toBe(200);
+		const feed = (await (await fetchWorker("/prompts")).json()) as { featured?: Record<string, string>; days?: Record<string, unknown> };
+		expect(feed.featured?.blindTop5).toBeUndefined();
+		expect(Object.keys(feed.days ?? {})).toContain("2099-01-02");
+		const pub = await fetchWorker("/publish", { method: "POST", headers: auth, body: JSON.stringify(SEED_FEED) });
+		expect(pub.status).toBe(200);
+		const after = (await (await fetchWorker("/prompts")).json()) as { days?: Record<string, unknown> };
+		expect(Object.keys(after.days ?? {})).toContain("2099-01-02");
+		const del = await fetchWorker("/stage-day?date=2099-01-02", { method: "DELETE", headers: auth });
+		expect(del.status).toBe(200);
+		const gone = (await (await fetchWorker("/prompts")).json()) as { days?: Record<string, unknown> };
+		expect(gone.days).toBeUndefined();
+	});
+	it("rejects a day whose featured id is unknown", async () => {
+		const r = await fetchWorker("/stage-day", { method: "POST", headers: auth,
+			body: JSON.stringify({ date: "2099-01-03", entry: { featured: { blindTop5: "missing" } } }) });
+		expect(r.status).toBe(400);
 	});
 });

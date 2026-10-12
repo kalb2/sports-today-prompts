@@ -89,6 +89,10 @@ export interface PromptFeed {
 	/** All six games' featured ids. Each id names a board of that game in this feed. */
 	featured?: FeaturedMap;
 	boards?: FeedBoards;
+	/** Dated board days (YYYY-MM-DD, 7:00 AM MT boundary). Additive; old builds ignore it. */
+	days?: import("./days").DayMap;
+	/** Board-day key the top-level fields describe (set when served). */
+	today?: string;
 }
 
 /**

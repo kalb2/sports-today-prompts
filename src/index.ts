@@ -10,14 +10,16 @@ import { PRIVACY_HTML, SUPPORT_HTML } from "./pages";
 import { MAX_PUBLISH_BYTES, unknownSportError, validateFeed } from "./validate";
 import { acceptableDay, isKnownTopic, readConsensus, recordVote, validateVote, type TopicMap } from "./blind";
 import { BLIND_TOPICS } from "./blind-topics";
+import { boardDayKey, pruneDays, servedFeed, validateDays } from "./days";
 
 /** Blind Ranking boards from the feed, so a Notion-only topic still takes votes. */
 async function feedTopics(env: Env, topicId: unknown): Promise<TopicMap> {
 	if (typeof topicId !== "string" || Object.hasOwn(BLIND_TOPICS, topicId)) return {};
 	const feed = await resolveFeed(env);
 	const out: Record<string, string[]> = {};
-	for (const board of feed.boards?.blindTop5 ?? []) {
-		out[board.id] = board.items.map((item) => item.id);
+	const lists = [feed.boards?.blindTop5 ?? [], ...Object.values(feed.days ?? {}).map((d) => d.boards?.blindTop5 ?? [])];
+	for (const list of lists) {
+		for (const board of list) out[board.id] = board.items.map((item) => item.id);
 	}
 	return out;
 }
@@ -171,6 +173,12 @@ async function handlePublish(request: Request, env: Env): Promise<Response> {
 		...result.feed,
 		updatedAt,
 	};
+	// A publish without `days` keeps the days already staged (re-validated against the new pool).
+	if ((parsed as { days?: unknown }).days === undefined) {
+		const previous = await readStoredFeed(env);
+		const kept = validateDays(pruneDays((previous as PromptFeed | null)?.days), feed);
+		if (kept.ok && Object.keys(kept.days).length > 0) feed.days = kept.days;
+	}
 
 	try {
 		await writeStoredFeed(env, feed);
@@ -193,6 +201,43 @@ async function handlePublish(request: Request, env: Env): Promise<Response> {
 	);
 
 	return json({ ok: true, updatedAt });
+}
+
+/** POST /stage-day {date, entry}: stores one dated day without touching today's top-level boards.
+ *  DELETE /stage-day?date=YYYY-MM-DD removes it (hold). */
+async function handleStageDay(request: Request, url: URL, env: Env): Promise<Response> {
+	if (!isAuthorized(request, env)) return json({ error: "unauthorized" }, 401);
+	const stored = await resolveFeed(env);
+	const base: PromptFeed = { ...stored, days: pruneDays(stored.days) };
+	let date: string | null;
+	let days = { ...(base.days ?? {}) };
+	if (request.method === "DELETE") {
+		date = url.searchParams.get("date");
+		if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return json({ error: "invalid_date" }, 400);
+		delete days[date];
+	} else {
+		const raw = await request.text();
+		if (raw.length > MAX_PUBLISH_BYTES) return json({ error: "payload_too_large" }, 413);
+		let body: { date?: unknown; entry?: unknown };
+		try { body = JSON.parse(raw); } catch { return json({ error: "invalid_json" }, 400); }
+		date = typeof body.date === "string" ? body.date : null;
+		if (!date) return json({ error: "invalid_date" }, 400);
+		const one = validateDays({ [date]: body.entry }, base);
+		if (!one.ok) return json({ error: "invalid_day", detail: one.error }, 400);
+		const sportError = unknownSportError({ ...base, prompts: one.days[date].prompts ?? [], boards: one.days[date].boards });
+		if (sportError) return json({ error: "invalid_day", detail: sportError }, 400);
+		days[date] = one.days[date];
+	}
+	const next: PromptFeed = { ...base, days: Object.keys(days).length ? days : undefined };
+	if (!next.days) delete next.days;
+	delete next.today;
+	try {
+		await writeStoredFeed(env, next);
+	} catch {
+		return json({ error: "persist_failed" }, 500);
+	}
+	console.log(JSON.stringify({ message: "day_staged", date, method: request.method, days: Object.keys(days) }));
+	return json({ ok: true, date, today: boardDayKey(), days: Object.keys(days).sort() });
 }
 
 async function handleRequest(request: Request, env: Env): Promise<Response> {
@@ -218,7 +263,7 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
 				},
 			});
 		}
-		return publicJson(feed);
+		return publicJson(servedFeed(feed));
 	}
 
 	if (path === "/health") {
@@ -226,7 +271,8 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
 			return json({ error: "method_not_allowed" }, 405);
 		}
 		const feed = await resolveFeed(env);
-		return json({ ok: true, updatedAt: feed.updatedAt });
+		const served = servedFeed(feed);
+		return json({ ok: true, updatedAt: feed.updatedAt, today: served.today, days: Object.keys(served.days ?? {}).sort(), featured: served.featured ?? null });
 	}
 
 	if (path === "/blind/vote") {
@@ -241,6 +287,13 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
 			return json({ error: "method_not_allowed" }, 405);
 		}
 		return handleBlindConsensus(url, env);
+	}
+
+	if (path === "/stage-day") {
+		if (request.method !== "POST" && request.method !== "DELETE") {
+			return json({ error: "method_not_allowed" }, 405);
+		}
+		return handleStageDay(request, url, env);
 	}
 
 	if (path === "/publish") {
