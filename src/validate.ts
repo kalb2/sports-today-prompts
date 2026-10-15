@@ -74,6 +74,22 @@ const BOARD_CHECKS: Record<keyof FeedBoards, BoardCheck> = {
 		if (new Set((b.items as { id: string }[]).map((i) => i.id)).size !== 5) return "items ids must be unique";
 		return null;
 	},
+	careerPath: (b) => {
+		const players = Array.isArray(b.players) ? (b.players as Record<string, unknown>[]) : null;
+		if (players) {
+			if (players.length < 1) return "players must not be empty";
+			for (let i = 0; i < players.length; i++) {
+				const p = players[i];
+				if (!nonEmpty(p.id)) return `players[${i}].id must be a non-empty string`;
+				if (!nonEmpty(p.name)) return `players[${i}].name must be a non-empty string`;
+				if (!Array.isArray(p.stops) || (p.stops as unknown[]).length < 1) return `players[${i}].stops must be a non-empty array`;
+			}
+			return null;
+		}
+		if (!nonEmpty(b.name) && !nonEmpty(b.title)) return "name or title required for a single-player board";
+		if (!Array.isArray(b.stops) || (b.stops as unknown[]).length < 1) return "stops must be a non-empty array";
+		return null;
+	},
 };
 
 /** Every board shape is checked; one bad board rejects the publish so nothing half-valid goes live. */

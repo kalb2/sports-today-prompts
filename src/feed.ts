@@ -68,15 +68,44 @@ export interface BlindBoard extends BoardBase {
 }
 
 /** Boards for the four games that are not in `prompts`. Additive: old builds ignore it. */
+export interface CareerStop {
+	abbr: string;
+	shortName: string;
+	years: string;
+	primary: string;
+	secondary: string;
+}
+
+export interface CareerPlayer {
+	id: string;
+	name: string;
+	aliases?: string[];
+	sport?: string;
+	position?: string;
+	draftYear?: number;
+	stops: CareerStop[];
+}
+
+/** One player or a five-player daily pack. */
+export interface CareerPathBoard extends BoardBase {
+	name?: string;
+	aliases?: string[];
+	position?: string;
+	draftYear?: number;
+	stops?: CareerStop[];
+	players?: CareerPlayer[];
+}
+
 export interface FeedBoards {
 	factOrCap?: FactOrCapBoard[];
 	higherLower?: HigherLowerBoard[];
 	whoIsWho?: WhoIsWhoBoard[];
 	blindTop5?: BlindBoard[];
+	careerPath?: CareerPathBoard[];
 }
 
 /** Today's board id per game, keyed by app format id. */
-export type FeaturedMap = Partial<Record<"top10Guess" | "keep3Cut5" | "factOrCap" | "higherLower" | "whoIsWho" | "blindTop5", string>>;
+export type FeaturedMap = Partial<Record<"top10Guess" | "keep3Cut5" | "factOrCap" | "higherLower" | "whoIsWho" | "blindTop5" | "careerPath", string>>;
 
 export interface PromptFeed {
 	version: number;
