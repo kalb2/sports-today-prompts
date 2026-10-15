@@ -33,7 +33,7 @@ function mergeById<T extends { id: string }>(first: T[] = [], second: T[] = []):
 function mergeBoards(day: FeedBoards | undefined, base: FeedBoards | undefined): FeedBoards | undefined {
 	if (!day && !base) return undefined;
 	const out: FeedBoards = {};
-	for (const game of ["factOrCap", "higherLower", "whoIsWho", "blindTop5"] as const) {
+	for (const game of ["factOrCap", "higherLower", "whoIsWho", "blindTop5", "careerPath"] as const) {
 		const merged = mergeById((day?.[game] ?? []) as { id: string }[], (base?.[game] ?? []) as { id: string }[]);
 		if (merged.length) (out as Record<string, unknown>)[game] = merged;
 	}
