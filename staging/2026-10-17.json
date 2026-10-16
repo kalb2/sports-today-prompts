@@ -1,0 +1,372 @@
+{
+ "date": "2026-10-17",
+ "entry": {
+  "featured": {
+   "top10Guess": "t10_nfl_rec_001",
+   "keep3Cut5": "k3c5-cfb-qb-001",
+   "factOrCap": "foc-nfl-marino-sb",
+   "higherLower": "hl-nfl-rush-001",
+   "whoIsWho": "who-nfl-favre-elway",
+   "blindTop5": "blind-cfb-dynasties",
+   "careerPath": "cp-nba-kawhi"
+  },
+  "prompts": [
+   {
+    "id": "t10_nfl_rec_001",
+    "format": "top_10_guess",
+    "sport": "nfl",
+    "title": "All-time NFL receiving yards",
+    "promptText": "Name the top 10: All-time NFL receiving yards. Group shares 3 strikes.",
+    "metricLabel": "yds",
+    "strikesAllowed": 3,
+    "acceptAliases": true,
+    "items": [
+     {
+      "rank": 1,
+      "canonical": "Jerry Rice",
+      "aliases": [
+       "Rice",
+       "Jerry Rice"
+      ],
+      "metric": 22895
+     },
+     {
+      "rank": 2,
+      "canonical": "Larry Fitzgerald",
+      "aliases": [
+       "Fitzgerald",
+       "Larry Fitzgerald",
+       "Fitz"
+      ],
+      "metric": 17492
+     },
+     {
+      "rank": 3,
+      "canonical": "Terrell Owens",
+      "aliases": [
+       "Owens",
+       "Terrell Owens",
+       "T.O.",
+       "TO"
+      ],
+      "metric": 15934
+     },
+     {
+      "rank": 4,
+      "canonical": "Randy Moss",
+      "aliases": [
+       "Moss",
+       "Randy Moss"
+      ],
+      "metric": 15292
+     },
+     {
+      "rank": 5,
+      "canonical": "Isaac Bruce",
+      "aliases": [
+       "Bruce",
+       "Isaac Bruce",
+       "Ike Bruce"
+      ],
+      "metric": 15208
+     },
+     {
+      "rank": 6,
+      "canonical": "Tony Gonzalez",
+      "aliases": [
+       "Gonzalez",
+       "Tony Gonzalez",
+       "Tony G"
+      ],
+      "metric": 15127
+     },
+     {
+      "rank": 7,
+      "canonical": "Tim Brown",
+      "aliases": [
+       "Brown",
+       "Tim Brown",
+       "Timmy Brown"
+      ],
+      "metric": 14934
+     },
+     {
+      "rank": 8,
+      "canonical": "Steve Smith Sr.",
+      "aliases": [
+       "Steve Smith Sr.",
+       "Steve Smith",
+       "Smitty"
+      ],
+      "metric": 14731
+     },
+     {
+      "rank": 9,
+      "canonical": "Marvin Harrison",
+      "aliases": [
+       "Harrison",
+       "Marvin Harrison",
+       "Marvin"
+      ],
+      "metric": 14580
+     },
+     {
+      "rank": 10,
+      "canonical": "Reggie Wayne",
+      "aliases": [
+       "Wayne",
+       "Reggie Wayne",
+       "Reggie"
+      ],
+      "metric": 14345
+     }
+    ],
+    "difficulty": 3
+   },
+   {
+    "id": "k3c5-cfb-qb-001",
+    "format": "keep_3_cut_5",
+    "sport": "cfb",
+    "title": "Heisman QBs",
+    "promptText": "Pick 3 Heisman-era college QBs for your all-time CFB Mount Rushmore. Cut the other 5. Opinion board — no correct keep set.",
+    "metricLabel": "yds",
+    "strikesAllowed": 3,
+    "acceptAliases": true,
+    "items": [
+     {
+      "rank": 1,
+      "canonical": "Tim Tebow",
+      "aliases": [
+       "Tebow",
+       "Tim Tebow"
+      ],
+      "metric": 0
+     },
+     {
+      "rank": 2,
+      "canonical": "Cam Newton",
+      "aliases": [
+       "Cam",
+       "Cam Newton",
+       "Newton"
+      ],
+      "metric": 0
+     },
+     {
+      "rank": 3,
+      "canonical": "Baker Mayfield",
+      "aliases": [
+       "Baker",
+       "Mayfield",
+       "Baker Mayfield"
+      ],
+      "metric": 0
+     },
+     {
+      "rank": 4,
+      "canonical": "Joe Burrow",
+      "aliases": [
+       "Burrow",
+       "Joe Burrow",
+       "Joe"
+      ],
+      "metric": 0
+     },
+     {
+      "rank": 5,
+      "canonical": "Caleb Williams",
+      "aliases": [
+       "Caleb",
+       "Caleb Williams"
+      ],
+      "metric": 0
+     },
+     {
+      "rank": 6,
+      "canonical": "Johnny Manziel",
+      "aliases": [
+       "Manziel",
+       "Johnny Football",
+       "Johnny Manziel"
+      ],
+      "metric": 0
+     },
+     {
+      "rank": 7,
+      "canonical": "Lamar Jackson",
+      "aliases": [
+       "Lamar",
+       "Lamar Jackson"
+      ],
+      "metric": 0
+     },
+     {
+      "rank": 8,
+      "canonical": "Marcus Mariota",
+      "aliases": [
+       "Mariota",
+       "Marcus Mariota"
+      ],
+      "metric": 0
+     }
+    ],
+    "difficulty": 3
+   }
+  ],
+  "boards": {
+   "factOrCap": [
+    {
+     "id": "foc-nfl-marino-sb",
+     "sport": "nfl",
+     "title": "Marino Super Bowl win",
+     "difficulty": 2,
+     "claim": "Dan Marino won a Super Bowl.",
+     "explanation": "Cap — Marino reached Super Bowl XIX with the Dolphins and lost to the 49ers. He never won a title.",
+     "correctIsFact": false
+    }
+   ],
+   "higherLower": [
+    {
+     "id": "hl-nfl-rush-001",
+     "sport": "nfl",
+     "title": "Career rushing yards: Walter Payton vs Emmitt Smith",
+     "difficulty": 2,
+     "subject": "Career rushing yards",
+     "metricUnit": "yds",
+     "anchorLabel": "Emmitt Smith",
+     "anchorMetric": "18,355",
+     "challengeLabel": "Walter Payton",
+     "challengeMetric": "16,726",
+     "correctIsHigher": false,
+     "explanation": "Less — Walter Payton’s 16,726 yds trail Emmitt Smith’s 18,355."
+    }
+   ],
+   "whoIsWho": [
+    {
+     "id": "who-nfl-favre-elway",
+     "sport": "nfl",
+     "title": "Favre or Elway",
+     "difficulty": 3,
+     "subject": "Career quarterbacks",
+     "boxScore": {
+      "id": "favre",
+      "label": "Brett Favre"
+     },
+     "consensus": {
+      "id": "elway",
+      "label": "John Elway"
+     },
+     "lines": [
+      {
+       "label": "PASS YDS",
+       "boxScore": "71,838",
+       "consensus": "51,475",
+       "leader": "boxScore"
+      },
+      {
+       "label": "PASS TD",
+       "boxScore": "508",
+       "consensus": "300",
+       "leader": "boxScore"
+      },
+      {
+       "label": "COMPLETIONS",
+       "boxScore": "6,300",
+       "consensus": "4,123",
+       "leader": "boxScore"
+      },
+      {
+       "label": "MVPS",
+       "boxScore": "3",
+       "consensus": "1",
+       "leader": "boxScore"
+      },
+      {
+       "label": "SB WINS",
+       "boxScore": "1",
+       "consensus": "2",
+       "leader": "consensus"
+      }
+     ],
+     "why": "Yards, touchdowns, completions and MVPs are Favre. Two rings are the trap line and why Elway is the usual pick."
+    }
+   ],
+   "blindTop5": [
+    {
+     "id": "blind-cfb-dynasties",
+     "sport": "cfb",
+     "title": "Greatest college football dynasties",
+     "difficulty": 3,
+     "body": "Greatest college football dynasties",
+     "items": [
+      {
+       "id": "bud-wilkinson-s-oklahoma",
+       "label": "Bud Wilkinson's Oklahoma"
+      },
+      {
+       "id": "1980s-miami",
+       "label": "1980s Miami"
+      },
+      {
+       "id": "tom-osborne-s-nebraska",
+       "label": "Tom Osborne's Nebraska"
+      },
+      {
+       "id": "nick-saban-s-alabama",
+       "label": "Nick Saban's Alabama"
+      },
+      {
+       "id": "dabo-swinney-s-clemson",
+       "label": "Dabo Swinney's Clemson"
+      }
+     ]
+    }
+   ],
+   "careerPath": [
+    {
+     "id": "cp-nba-kawhi",
+     "sport": "nba",
+     "title": "Kawhi Leonard",
+     "difficulty": 2,
+     "name": "Kawhi Leonard",
+     "aliases": [
+      "Kawhi",
+      "Leonard"
+     ],
+     "position": "SF",
+     "draftYear": 2011,
+     "stops": [
+      {
+       "abbr": "SAS",
+       "shortName": "Spurs",
+       "years": "2011–2018",
+       "primary": "#C4CED4",
+       "secondary": "#000000"
+      },
+      {
+       "abbr": "TOR",
+       "shortName": "Raptors",
+       "years": "2018–2019",
+       "primary": "#CE1141",
+       "secondary": "#000000"
+      },
+      {
+       "abbr": "LAC",
+       "shortName": "Clippers",
+       "years": "2019–2026",
+       "primary": "#C8102E",
+       "secondary": "#1D428A"
+      },
+      {
+       "abbr": "TOR",
+       "shortName": "Raptors",
+       "years": "2026–",
+       "primary": "#CE1141",
+       "secondary": "#000000"
+      }
+     ]
+    }
+   ]
+  }
+ }
+}

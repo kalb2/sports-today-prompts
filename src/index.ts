@@ -7,7 +7,7 @@ import {
 	type PromptFeed,
 } from "./feed";
 import { PRIVACY_HTML, SUPPORT_HTML } from "./pages";
-import { MAX_PUBLISH_BYTES, unknownSportError, validateFeed } from "./validate";
+import { feedWhoIsWhoRuleError, MAX_PUBLISH_BYTES, unknownSportError, validateFeed, whoIsWhoRuleError } from "./validate";
 import { acceptableDay, isKnownTopic, readConsensus, recordVote, validateVote, type TopicMap } from "./blind";
 import { BLIND_TOPICS } from "./blind-topics";
 import { boardDayKey, pruneDays, servedFeed, validateDays } from "./days";
@@ -176,6 +176,10 @@ async function handlePublish(request: Request, env: Env): Promise<Response> {
 	if (sportError) {
 		return json({ error: "invalid_feed", detail: sportError }, 400);
 	}
+	const whoError = feedWhoIsWhoRuleError(result.feed);
+	if (whoError) {
+		return json({ error: "invalid_feed", detail: whoError }, 400);
+	}
 
 	const updatedAt = new Date().toISOString();
 	const feed: PromptFeed = {
@@ -235,6 +239,8 @@ async function handleStageDay(request: Request, url: URL, env: Env): Promise<Res
 		if (!one.ok) return json({ error: "invalid_day", detail: one.error }, 400);
 		const sportError = unknownSportError({ ...base, prompts: one.days[date].prompts ?? [], boards: one.days[date].boards });
 		if (sportError) return json({ error: "invalid_day", detail: sportError }, 400);
+		const whoError = whoIsWhoRuleError(one.days[date].boards, `days.${date}.boards`);
+		if (whoError) return json({ error: "invalid_day", detail: whoError }, 400);
 		days[date] = one.days[date];
 	}
 	const next: PromptFeed = { ...base, days: Object.keys(days).length ? days : undefined };

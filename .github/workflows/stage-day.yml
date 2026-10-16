@@ -1,0 +1,31 @@
+name: Stage day
+
+# Manual: POST a committed staging/<date>.json ({date, entry}) to /stage-day with PUBLISH_TOKEN.
+on:
+  workflow_dispatch:
+    inputs:
+      file:
+        description: "Path to the {date, entry} JSON, e.g. staging/2026-10-17.json"
+        required: true
+
+jobs:
+  stage:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - name: POST /stage-day
+        env:
+          PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
+          FILE: ${{ inputs.file }}
+        run: |
+          set -euo pipefail
+          case "$FILE" in staging/*.json) ;; *) echo "::error::file must be staging/*.json"; exit 1;; esac
+          test -f "$FILE"
+          code=$(curl -sS -o resp.json -w '%{http_code}' -X POST \
+            "https://sports-today-prompts.k24corp.workers.dev/stage-day" \
+            -H "Authorization: Bearer ${PUBLISH_TOKEN}" -H "Content-Type: application/json" \
+            --data-binary @"$FILE")
+          cat resp.json; echo
+          test "$code" = "200"
