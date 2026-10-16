@@ -1,0 +1,382 @@
+{
+ "date": "2026-10-16",
+ "entry": {
+  "featured": {
+   "top10Guess": "t10_cfb_003",
+   "keep3Cut5": "k3c5-nba-finals-001",
+   "factOrCap": "foc-nba-wilt-100",
+   "higherLower": "hl-nba-pts-001",
+   "blindTop5": "blind-nba-top-picks",
+   "whoIsWho": "who-nba-stockton-isiah",
+   "careerPath": "cp-nba-westbrook"
+  },
+  "prompts": [
+   {
+    "id": "t10_cfb_003",
+    "format": "top_10_guess",
+    "sport": "cfb",
+    "title": "All-time FBS career receiving yards leaders",
+    "promptText": "Name the 10 FBS players with the most career receiving yards. Group shares 3 strikes.",
+    "metricLabel": "yds",
+    "strikesAllowed": 3,
+    "acceptAliases": true,
+    "items": [
+     {
+      "rank": 1,
+      "canonical": "Corey Davis",
+      "aliases": [
+       "Davis",
+       "Corey Davis",
+       "C. Davis"
+      ],
+      "metric": 5285
+     },
+     {
+      "rank": 2,
+      "canonical": "Trevor Insley",
+      "aliases": [
+       "Insley",
+       "Trevor Insley",
+       "Trevor"
+      ],
+      "metric": 5005
+     },
+     {
+      "rank": 3,
+      "canonical": "Ryan Broyles",
+      "aliases": [
+       "Broyles",
+       "Ryan Broyles"
+      ],
+      "metric": 4586
+     },
+     {
+      "rank": 4,
+      "canonical": "Justin Hardy",
+      "aliases": [
+       "Hardy",
+       "Justin Hardy",
+       "J. Hardy"
+      ],
+      "metric": 4541
+     },
+     {
+      "rank": 5,
+      "canonical": "Marcus Harris",
+      "aliases": [
+       "Marcus Harris",
+       "M. Harris",
+       "Marcus"
+      ],
+      "metric": 4518
+     },
+     {
+      "rank": 6,
+      "canonical": "Patrick Edwards",
+      "aliases": [
+       "Patrick Edwards",
+       "P. Edwards",
+       "Edwards",
+       "Pat Edwards"
+      ],
+      "metric": 4507
+     },
+     {
+      "rank": 7,
+      "canonical": "Jacob Cowing",
+      "aliases": [
+       "Cowing",
+       "Jacob Cowing",
+       "Jacob",
+       "Jake Cowing"
+      ],
+      "metric": 4477
+     },
+     {
+      "rank": 8,
+      "canonical": "James Washington",
+      "aliases": [
+       "James Washington",
+       "J. Washington",
+       "Washington"
+      ],
+      "metric": 4472
+     },
+     {
+      "rank": 9,
+      "canonical": "Rashaun Woods",
+      "aliases": [
+       "Rashaun",
+       "Rashaun Woods",
+       "Woods"
+      ],
+      "metric": 4414
+     },
+     {
+      "rank": 10,
+      "canonical": "Ryan Yarborough",
+      "aliases": [
+       "Yarborough",
+       "Ryan Yarborough"
+      ],
+      "metric": 4357
+     }
+    ],
+    "difficulty": 5
+   },
+   {
+    "id": "k3c5-nba-finals-001",
+    "format": "keep_3_cut_5",
+    "sport": "nba",
+    "title": "Finals you'd rewatch",
+    "promptText": "Keep 3, cut 5: Finals you'd rewatch. Opinion board — no correct keep set.",
+    "metricLabel": "yds",
+    "strikesAllowed": 3,
+    "acceptAliases": true,
+    "items": [
+     {
+      "rank": 1,
+      "canonical": "2016 Cavs-Warriors",
+      "aliases": [
+       "2016 Cavs-Warriors"
+      ],
+      "metric": 0
+     },
+     {
+      "rank": 2,
+      "canonical": "1998 Bulls-Jazz",
+      "aliases": [
+       "1998 Bulls-Jazz"
+      ],
+      "metric": 0
+     },
+     {
+      "rank": 3,
+      "canonical": "2013 Heat-Spurs",
+      "aliases": [
+       "2013 Heat-Spurs"
+      ],
+      "metric": 0
+     },
+     {
+      "rank": 4,
+      "canonical": "2011 Mavs-Heat",
+      "aliases": [
+       "2011 Mavs-Heat"
+      ],
+      "metric": 0
+     },
+     {
+      "rank": 5,
+      "canonical": "2004 Pistons-Lakers",
+      "aliases": [
+       "2004 Pistons-Lakers"
+      ],
+      "metric": 0
+     },
+     {
+      "rank": 6,
+      "canonical": "1993 Bulls-Suns",
+      "aliases": [
+       "1993 Bulls-Suns"
+      ],
+      "metric": 0
+     },
+     {
+      "rank": 7,
+      "canonical": "2021 Bucks-Suns",
+      "aliases": [
+       "2021 Bucks-Suns"
+      ],
+      "metric": 0
+     },
+     {
+      "rank": 8,
+      "canonical": "2014 Spurs-Heat",
+      "aliases": [
+       "2014 Spurs-Heat"
+      ],
+      "metric": 0
+     }
+    ],
+    "difficulty": 2
+   }
+  ],
+  "boards": {
+   "factOrCap": [
+    {
+     "id": "foc-nba-wilt-100",
+     "sport": "nba",
+     "title": "Wilt’s 100-point game",
+     "difficulty": 2,
+     "claim": "Wilt Chamberlain scored 100 points in a single NBA game.",
+     "explanation": "Fact — Chamberlain scored 100 for the Philadelphia Warriors against the Knicks on March 2, 1962.",
+     "correctIsFact": true
+    }
+   ],
+   "higherLower": [
+    {
+     "id": "hl-nba-pts-001",
+     "sport": "nba",
+     "title": "Career points: Karl Malone vs Kareem Abdul-Jabbar",
+     "difficulty": 2,
+     "subject": "Career points",
+     "metricUnit": "pts",
+     "anchorLabel": "Kareem Abdul-Jabbar",
+     "anchorMetric": "38,387",
+     "challengeLabel": "Karl Malone",
+     "challengeMetric": "36,928",
+     "correctIsHigher": false,
+     "explanation": "Less — Karl Malone’s 36,928 pts trail Kareem Abdul-Jabbar’s 38,387."
+    }
+   ],
+   "whoIsWho": [
+    {
+     "id": "who-nba-stockton-isiah",
+     "sport": "nba",
+     "title": "Stockton or Isiah",
+     "difficulty": 3,
+     "subject": "Career point guards",
+     "boxScore": {
+      "id": "stockton",
+      "label": "John Stockton"
+     },
+     "consensus": {
+      "id": "thomas",
+      "label": "Isiah Thomas"
+     },
+     "lines": [
+      {
+       "label": "ASSISTS",
+       "boxScore": "15,806",
+       "consensus": "9,061",
+       "leader": "boxScore"
+      },
+      {
+       "label": "STEALS",
+       "boxScore": "3,265",
+       "consensus": "1,861",
+       "leader": "boxScore"
+      },
+      {
+       "label": "GAMES",
+       "boxScore": "1,504",
+       "consensus": "979",
+       "leader": "boxScore"
+      },
+      {
+       "label": "POINTS",
+       "boxScore": "19,711",
+       "consensus": "18,822",
+       "leader": "boxScore"
+      },
+      {
+       "label": "TITLES",
+       "boxScore": "0",
+       "consensus": "2",
+       "leader": "consensus"
+      }
+     ],
+     "why": "Assists, steals, games and points are Stockton. Two Pistons titles are the trap and why Isiah is the usual pick."
+    }
+   ],
+   "blindTop5": [
+    {
+     "id": "blind-nba-top-picks",
+     "sport": "nba",
+     "title": "Best No. 1 overall picks since 2000",
+     "difficulty": 2,
+     "body": "Best No. 1 overall picks since 2000",
+     "items": [
+      {
+       "id": "lebron-james",
+       "label": "LeBron James"
+      },
+      {
+       "id": "dwight-howard",
+       "label": "Dwight Howard"
+      },
+      {
+       "id": "derrick-rose",
+       "label": "Derrick Rose"
+      },
+      {
+       "id": "anthony-davis",
+       "label": "Anthony Davis"
+      },
+      {
+       "id": "victor-wembanyama",
+       "label": "Victor Wembanyama"
+      }
+     ]
+    }
+   ],
+   "careerPath": [
+    {
+     "id": "cp-nba-westbrook",
+     "sport": "nba",
+     "title": "Russell Westbrook",
+     "difficulty": 3,
+     "name": "Russell Westbrook",
+     "aliases": [
+      "Westbrook",
+      "Russ"
+     ],
+     "position": "PG",
+     "draftYear": 2008,
+     "stops": [
+      {
+       "abbr": "OKC",
+       "shortName": "Thunder",
+       "years": "2008–2019",
+       "primary": "#007AC1",
+       "secondary": "#EF3B24"
+      },
+      {
+       "abbr": "HOU",
+       "shortName": "Rockets",
+       "years": "2019–2020",
+       "primary": "#CE1141",
+       "secondary": "#000000"
+      },
+      {
+       "abbr": "WSH",
+       "shortName": "Wizards",
+       "years": "2020–2021",
+       "primary": "#002B5C",
+       "secondary": "#E31837"
+      },
+      {
+       "abbr": "LAL",
+       "shortName": "Lakers",
+       "years": "2021–2023",
+       "primary": "#552583",
+       "secondary": "#FDB927"
+      },
+      {
+       "abbr": "LAC",
+       "shortName": "Clippers",
+       "years": "2023–2024",
+       "primary": "#C8102E",
+       "secondary": "#1D428A"
+      },
+      {
+       "abbr": "DEN",
+       "shortName": "Nuggets",
+       "years": "2024–2025",
+       "primary": "#0E2240",
+       "secondary": "#FEC524"
+      },
+      {
+       "abbr": "SAC",
+       "shortName": "Kings",
+       "years": "2025–2026",
+       "primary": "#5A2D81",
+       "secondary": "#63727A"
+      }
+     ]
+    }
+   ]
+  }
+ }
+}

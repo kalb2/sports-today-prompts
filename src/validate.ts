@@ -213,6 +213,35 @@ export function unknownSportError(feed: PromptFeed): string | null {
 	return null;
 }
 
+/** Guess the Players punchline rows. Matches WhoIsWhoPlay.isPunchline in the app. */
+const WHO_PUNCHLINES = new Set(["TITLES", "SB WINS"]);
+const isPunchline = (label: unknown) => WHO_PUNCHLINES.has(String(label ?? "").trim().toUpperCase());
+
+/** App rule for Guess the Players (WhoIsWhoBank.assertBoards): exactly 5 rows, rows 1–2 are not a
+ *  punchline, and the last row is TITLES or SB WINS. Checked on publish and stage-day; stored feeds are
+ *  still served so one bad row never takes down today's boards. */
+export function whoIsWhoRuleError(boards: FeedBoards | undefined, where = "boards"): string | null {
+	for (const [index, board] of (boards?.whoIsWho ?? []).entries()) {
+		const lines = board.lines ?? [];
+		const at = `${where}.whoIsWho[${index}] (${board.id})`;
+		if (lines.length !== 5) return `${at} must have exactly 5 lines`;
+		if (isPunchline(lines[0]?.label) || isPunchline(lines[1]?.label)) return `${at} lines 1-2 must not be TITLES or SB WINS`;
+		if (!isPunchline(lines[4]?.label)) return `${at} last line must be TITLES or SB WINS`;
+	}
+	return null;
+}
+
+/** whoIsWhoRuleError across the top-level pool and every staged day. */
+export function feedWhoIsWhoRuleError(feed: PromptFeed): string | null {
+	const top = whoIsWhoRuleError(feed.boards);
+	if (top) return top;
+	for (const [date, day] of Object.entries(feed.days ?? {})) {
+		const err = whoIsWhoRuleError(day.boards, `days.${date}.boards`);
+		if (err) return err;
+	}
+	return null;
+}
+
 const TOP10_FORMATS = new Set(["top_10_guess", "top_10_countdown", "top10Guess"]);
 const KEEP3_FORMATS = new Set(["keep_3_cut_5", "keep3Cut5"]);
 

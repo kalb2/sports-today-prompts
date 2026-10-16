@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { SEED_FEED } from "../src/feed";
 import { validateVote, TEST_DAY } from "../src/blind";
-import { unknownSportError, validateFeed } from "../src/validate";
+import { feedWhoIsWhoRuleError, unknownSportError, validateFeed, whoIsWhoRuleError } from "../src/validate";
 
 const keep3 = {
 	id: "k3-test",
@@ -26,6 +26,8 @@ const boards = {
 		lines: [
 			{ label: "PASS YDS", boxScore: "61,361", consensus: "40,551", leader: "boxScore" },
 			{ label: "PASS TD", boxScore: "420", consensus: "273", leader: "boxScore" },
+			{ label: "COMPLETIONS", boxScore: "4,967", consensus: "3,409", leader: "boxScore" },
+			{ label: "PRO BOWLS", boxScore: "9", consensus: "8", leader: "boxScore" },
 			{ label: "SB WINS", boxScore: "0", consensus: "4", leader: "consensus" },
 		],
 	}],
@@ -100,5 +102,27 @@ describe("blind votes for feed topics", () => {
 		const extra = { "blind-new-topic": ["a", "b", "c", "d", "e"] };
 		expect(validateVote({ date: TEST_DAY, topicId: "blind-new-topic", order: ["e", "d", "c", "b", "a"], deviceId }).ok).toBe(false);
 		expect(validateVote({ date: TEST_DAY, topicId: "blind-new-topic", order: ["e", "d", "c", "b", "a"], deviceId }, Date.now(), extra).ok).toBe(true);
+	});
+});
+
+describe("Guess the Players board rule", () => {
+	const who = boards.whoIsWho[0];
+	it("accepts 5 rows ending in a punchline", () => {
+		expect(whoIsWhoRuleError({ whoIsWho: [who] } as never)).toBeNull();
+	});
+	it("rejects 4 rows", () => {
+		expect(whoIsWhoRuleError({ whoIsWho: [{ ...who, lines: who.lines.slice(1) }] } as never)).toMatch(/exactly 5 lines/);
+	});
+	it("rejects a last row that is not TITLES or SB WINS", () => {
+		const lines = [...who.lines.slice(0, 3), who.lines[4], who.lines[3]];
+		expect(whoIsWhoRuleError({ whoIsWho: [{ ...who, lines }] } as never)).toMatch(/last line/);
+	});
+	it("rejects a punchline in the first two rows", () => {
+		const lines = [who.lines[4], ...who.lines.slice(1)];
+		expect(whoIsWhoRuleError({ whoIsWho: [{ ...who, lines }] } as never)).toMatch(/lines 1-2/);
+	});
+	it("checks staged days too", () => {
+		const feed = { ...SEED_FEED, days: { "2026-10-17": { featured: {}, boards: { whoIsWho: [{ ...who, lines: who.lines.slice(0, 4) }] } } } };
+		expect(feedWhoIsWhoRuleError(feed as never)).toMatch(/days\.2026-10-17/);
 	});
 });
