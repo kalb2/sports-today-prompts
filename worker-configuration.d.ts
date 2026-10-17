@@ -5,6 +5,8 @@ interface __BaseEnv_Env {
 	FEED: KVNamespace;
 	VOTES: D1Database;
 	VOTE_LIMITER: RateLimit;
+	SCORES: D1Database;
+	SCORES_LIMITER: RateLimit;
 	PUBLISH_TOKEN: string;
 }
 declare namespace Cloudflare {

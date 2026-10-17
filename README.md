@@ -71,6 +71,20 @@ The iMessage app already expects this exact shape:
 Publish rejects a malformed board or an unknown sport. `/blind/vote` and `/blind/consensus` accept the
 bundled topics plus any `boards.blindTop5` topic in the live feed.
 
+## Friends leaderboard (`POST /lb/sync`)
+
+The app's in-app Leaderboard: you plus the friends you've played in Messages. No accounts, no global board.
+
+- D1 `ball-knowledge-scores` (binding `SCORES`). Tables are created on first use; the same SQL is in
+  `migrations/0001_leaderboard.sql`.
+- A player is an anonymous per-install `id` (16 hex) and a `secret` (32–64 hex). The first sync claims the id and
+  stores only a hash of the secret; a later sync with another secret gets `403 id_taken`.
+- Body: `{ id, secret, name?, friends?: [id…≤64], score?: { day, format, points 0–10, elapsed 0–86400 },
+  standing?: { overall 0–100|null, games, rank 0–5 } }`. `day` must be today's or yesterday's 7 AM MT board day.
+- One score per player per board day (`accepted: false` on a repeat). Friend links work both ways.
+- Reply: `today` (points desc, then faster finish) and `overall` (score desc, `move` = places vs last week's
+  snapshot, weeks start Sunday). Rate limit `SCORES_LIMITER`, keyed by connection and by id. Body ≤ 4 KB.
+
 ## Seed (KV-empty fallback)
 
 Until something is published, `GET /prompts` returns **Career Passing Yards** (`t10_nfl_003`): a coherent PFR-style top 10, ranks 1–10.

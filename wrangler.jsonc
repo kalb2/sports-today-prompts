@@ -22,6 +22,12 @@
 			"binding": "VOTES",
 			"database_name": "ball-knowledge-votes",
 			"database_id": "939e1258-6150-41ab-b4ba-f8cde43b0165"
+		},
+		{
+			// Friends leaderboard (POST /lb/sync). Schema: migrations/0001_leaderboard.sql.
+			"binding": "SCORES",
+			"database_name": "ball-knowledge-scores",
+			"database_id": "ba3fc787-1bb3-4f48-b032-56474bda2643"
 		}
 	],
 	// Light abuse guard for POST /blind/vote.
@@ -30,6 +36,12 @@
 			"name": "VOTE_LIMITER",
 			"namespace_id": "1001",
 			"simple": { "limit": 30, "period": 60 }
+		},
+		// POST /lb/sync, keyed by connection and by player id.
+		{
+			"name": "SCORES_LIMITER",
+			"namespace_id": "1002",
+			"simple": { "limit": 20, "period": 60 }
 		}
 	]
 }
