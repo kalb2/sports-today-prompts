@@ -11,6 +11,7 @@ import { feedWhoIsWhoRuleError, MAX_PUBLISH_BYTES, unknownSportError, validateFe
 import { acceptableDay, isKnownTopic, readConsensus, recordVote, validateVote, type TopicMap } from "./blind";
 import { BLIND_TOPICS } from "./blind-topics";
 import { boardDayKey, pruneDays, servedFeed, validateDays } from "./days";
+import { MAX_SYNC_BYTES, runSync, validateSync } from "./scores";
 
 /** Blind Ranking boards from the feed, so a Notion-only topic still takes votes. */
 async function feedTopics(env: Env, topicId: unknown): Promise<TopicMap> {
@@ -72,6 +73,38 @@ async function handleBlindConsensus(url: URL, env: Env): Promise<Response> {
 		return json({ error: "invalid_query" }, 400);
 	}
 	return json(await readConsensus(env.VOTES, day, topicId, extra));
+}
+
+/** Rate limit for leaderboard syncs: per connection and per player id. Keys live only in the limiter. */
+async function scoresAllowed(env: Env, key: string): Promise<boolean> {
+	const limiter = env.SCORES_LIMITER;
+	if (!limiter) return true;
+	try {
+		const { success } = await limiter.limit({ key });
+		return success;
+	} catch {
+		return true;
+	}
+}
+
+async function handleLeaderboardSync(request: Request, env: Env): Promise<Response> {
+	if (!env.SCORES) return json({ error: "scores_not_configured" }, 503);
+	const ip = request.headers.get("CF-Connecting-IP") ?? "unknown";
+	if (!(await scoresAllowed(env, `ip:${ip}`))) return json({ error: "rate_limited" }, 429);
+	const raw = await request.text();
+	if (raw.length > MAX_SYNC_BYTES) return json({ error: "payload_too_large" }, 413);
+	let parsed: unknown;
+	try {
+		parsed = JSON.parse(raw);
+	} catch {
+		return json({ error: "invalid_json" }, 400);
+	}
+	const result = validateSync(parsed);
+	if (!result.ok) return json({ error: "invalid_sync", detail: result.error }, 400);
+	if (!(await scoresAllowed(env, `id:${result.sync.id}`))) return json({ error: "rate_limited" }, 429);
+	const outcome = await runSync(env.SCORES, result.sync);
+	if (!outcome.ok) return json({ error: outcome.error }, outcome.status);
+	return json(outcome.board);
 }
 
 const PUBLIC_CORS = {
@@ -302,6 +335,13 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
 			return json({ error: "method_not_allowed" }, 405);
 		}
 		return handleBlindConsensus(url, env);
+	}
+
+	if (path === "/lb/sync") {
+		if (request.method !== "POST") {
+			return json({ error: "method_not_allowed" }, 405);
+		}
+		return handleLeaderboardSync(request, env);
 	}
 
 	if (path === "/stage-day") {

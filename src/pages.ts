@@ -4,16 +4,17 @@ export const PRIVACY_HTML = `<!doctype html>
 <style>body{font:17px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;max-width:720px;margin:0 auto;padding:24px 20px 64px;color:#14213d;background:#f6f7fb}h1{font-size:28px;line-height:1.2}h2{font-size:20px;margin-top:28px}a{color:#007f99}code{font-size:14px;word-break:break-all}footer{margin-top:40px;font-size:14px;color:#5b6475}</style>
 </head><body>
 <h1>Ball Knowledge Games – Privacy Policy</h1>
-<p>Effective October 9, 2026</p>
+<p>Effective October 17, 2026</p>
 <p>Ball Knowledge Games ("Ball Knowledge", "the app") is made by Kaleb Jensen, an independent developer in the United States ("I", "me"). This policy explains what happens to information when you use the iPhone app. Contact: <a href="mailto:k24corp@gmail.com">k24corp@gmail.com</a>.</p>
 <h2>The short version</h2>
 <ul>
 <li>No account and no sign-in.</li>
-<li>I do not collect, sell, or share personal information.</li>
+<li>I do not sell or share personal information.</li>
 <li>The app has no ads, no analytics, no crash-reporting SDK, and no tracking.</li>
 <li>Your game progress is saved on your iPhone only.</li>
 <li>The app downloads a public list of trivia prompts. That download does not include anything about you.</li>
 <li>When you finish a Blind Ranking, the app sends your five-pick order with a random install code so it can show everyone's average ranking. It is not linked to your name, Apple ID, or contacts.</li>
+<li>The friends leaderboard sends your featured-board score, finish time, overall Ball Knowledge score, and the name you chose, with a random player code, so the friends you play in Messages can see them. There is no public board.</li>
 </ul>
 <h2>Information saved on your device</h2>
 <p>The app saves these items in its own storage on your iPhone:</p>
@@ -35,6 +36,10 @@ export const PRIVACY_HTML = `<!doctype html>
 <h2>Blind Ranking community ranking</h2>
 <p>When you finish a Blind Ranking, the app sends my server the date, the topic, the order you placed the five picks in, and a random code the app created when it was installed. The random code lets the server count one ranking per install per topic per day; a later ranking from the same install replaces the earlier one. The server stores only a one-way scrambled version of that code, not the code itself, together with the date, topic, and order. It does not receive your name, Apple ID, contacts, Messages conversations, location, or an advertising identifier, and I do not link these rankings to you.</p>
 <p>The server combines rankings into an average order for each topic. That average, and the number of rankings, are shown to everyone once a topic has at least 10 rankings that day. Individual rankings are never shown. The rankings are stored with Cloudflare D1 and are used only for this feature.</p>
+<h2>Friends leaderboard</h2>
+<p>The app's Leaderboard shows you and the friends you have played in Messages. To make that work, the app creates a random player code and a private key when it is installed. Game bubbles you send in Messages carry the player code, so the people in that conversation can link to you.</p>
+<p>When you finish the featured daily board, and when the Leaderboard opens, the app sends my server: the player code; the private key, which the server keeps only as a one-way scrambled value to stop anyone else posting under your code; the name you chose, if any; the board date, the game, your points (0–10), and your finish time in seconds; your overall Ball Knowledge score (0–100), its rank title, and how many scored games it is based on; and the player codes of friends linked through Messages. The server keeps one score per player per day and a weekly copy of the overall score to show movement. It does not receive your Apple ID, phone number, contacts, Messages conversations, location, or an advertising identifier.</p>
+<p>Your name, scores, and rank are shown only to players linked to you through Messages. The data is stored with Cloudflare D1 and used only for this feature. To have your leaderboard entry removed, email me.</p>
 <h2>Information you choose to send me</h2>
 <p>If you email support, I receive your email address and anything you put in the message. I use it only to answer you. I do not add you to a mailing list. I delete support emails when they are no longer needed, and you can ask me to delete yours at any time.</p>
 <h2>Apple</h2>
@@ -42,7 +47,7 @@ export const PRIVACY_HTML = `<!doctype html>
 <h2>Third parties</h2>
 <p>The only outside service involved in running the app is Cloudflare, which hosts the prompt server. No third-party SDKs are built into the app. If I ever share data with a third party, that party will be required to protect it as well as this policy does, and this policy will be updated first.</p>
 <h2>Keeping and deleting data</h2>
-<p>I have no account data about you on any server. Blind Ranking orders are stored only with the scrambled random code described above, which I cannot connect back to you. To delete everything the app has saved, delete the app from your iPhone. To delete a support email, write to <a href="mailto:k24corp@gmail.com">k24corp@gmail.com</a>.</p>
+<p>There is no account. Leaderboard entries are tied only to the random player code described above; email me and I will remove yours. Blind Ranking orders are stored only with the scrambled random code described above, which I cannot connect back to you. To delete everything the app has saved, delete the app from your iPhone. To delete a support email, write to <a href="mailto:k24corp@gmail.com">k24corp@gmail.com</a>.</p>
 <h2>Your choices and consent</h2>
 <p>The app does not ask for permission to use your camera, photos, microphone, location, contacts, or tracking, because it does not use them. You can stop the prompt download by turning off Wi-Fi and cellular data for the app in iPhone Settings. The app will keep working with saved prompts.</p>
 <h2>Children</h2>
@@ -69,13 +74,15 @@ export const SUPPORT_HTML = `<!doctype html>
 - what happened, and your iPhone model and iOS version.</p>
 <h2>Common questions</h2>
 <p><strong>When does a new daily board appear?</strong>
-After midnight Mountain Time (America/Denver). Each day you get one free board. If you start it and leave, you can resume it the same day from Home.</p>
+At 7 AM Mountain Time (America/Denver). Each day you get one free board. If you start it and leave, you can resume it the same day from Home.</p>
 <p><strong>Why can't I play the daily board again?</strong>
 The free daily board is one per day. Group Room has no daily limit, and you can play any of the five modes there.</p>
 <p><strong>How does Group Room work?</strong>
 Choose a mode and a prompt, choose 2 to 4 seats, then pass the phone. Each player takes a turn on the same board. Scores appear at the end. Everything stays on this one iPhone.</p>
 <p><strong>Do I need an account or internet?</strong>
 No account. The app downloads new prompts when it can. Without a connection it uses prompts already saved on your iPhone.</p>
+<p><strong>Who is on my Leaderboard?</strong>
+You and the friends you have played in Messages. Today ranks the featured board out of 10, and ties go to the faster finish. It resets at 7 AM Mountain Time. Ball Knowledge ranks everyone's overall score. Set a name in Profile so friends know it is you.</p>
 <p><strong>How do I see the rules again?</strong>
 On Home, tap How to Play.</p>
 <p><strong>How do I reset everything?</strong>
