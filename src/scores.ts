@@ -1,4 +1,4 @@
-import { boardDayKey } from "./days";
+import { addDays, boardDayKey, legacyBoardDayKey } from "./days";
 
 /**
  * Friends leaderboard for the Ball Knowledge app.
@@ -89,10 +89,15 @@ export function cleanName(raw: unknown): string | null {
 	return name;
 }
 
-/** Board day of the score: today's board or yesterday's (a queued offline finish). */
+/**
+ * Board day of the score: today's board or yesterday's (a queued offline finish), plus the day the
+ * pre-fix formula gives, so builds from before the daylight-saving fix keep their scores in the one
+ * hour a year it disagrees.
+ */
 export function acceptableScoreDay(day: unknown, now = Date.now()): day is string {
 	if (typeof day !== "string") return false;
-	return day === boardDayKey(now) || day === boardDayKey(now - 86_400_000);
+	const today = boardDayKey(now);
+	return day === today || day === addDays(today, -1) || day === legacyBoardDayKey(now);
 }
 
 /** Sunday that starts the board week holding `day` (YYYY-MM-DD). */
