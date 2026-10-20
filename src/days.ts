@@ -15,14 +15,41 @@ export const ROLLOVER_HOUR_MT = 7;
 const DAY_RE = /^\d{4}-\d{2}-\d{2}$/;
 const MAX_DAYS = 14;
 
-/** Board-day key: the America/Denver calendar date of (now − 7 h). */
-export function boardDayKey(nowMs: number = Date.now()): string {
-	const shifted = new Date(nowMs - ROLLOVER_HOUR_MT * 3_600_000);
-	const parts = new Intl.DateTimeFormat("en-CA", {
-		timeZone: "America/Denver", year: "numeric", month: "2-digit", day: "2-digit",
-	}).formatToParts(shifted);
+const DENVER_DATE_HOUR = new Intl.DateTimeFormat("en-CA", {
+	timeZone: "America/Denver", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", hourCycle: "h23",
+});
+const DENVER_DATE = new Intl.DateTimeFormat("en-CA", {
+	timeZone: "America/Denver", year: "numeric", month: "2-digit", day: "2-digit",
+});
+
+function partsOf(fmt: Intl.DateTimeFormat, ms: number) {
+	const parts = fmt.formatToParts(new Date(ms));
 	const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "00";
-	return `${get("year")}-${get("month")}-${get("day")}`;
+	return { date: `${get("year")}-${get("month")}-${get("day")}`, hour: Number(get("hour")) % 24 };
+}
+
+/** YYYY-MM-DD shifted by whole calendar days (no clock math, so daylight saving cannot skew it). */
+export function addDays(key: string, days: number): string {
+	const [y, m, d] = key.split("-").map(Number);
+	return new Date(Date.UTC(y, (m ?? 1) - 1, (d ?? 1) + days)).toISOString().slice(0, 10);
+}
+
+/**
+ * Board-day key: the America/Denver calendar date, rolling at 7:00 AM local time.
+ * Before 7:00 AM local it is still the previous date. Correct on daylight-saving days too.
+ */
+export function boardDayKey(nowMs: number = Date.now()): string {
+	const { date, hour } = partsOf(DENVER_DATE_HOUR, nowMs);
+	return hour < ROLLOVER_HOUR_MT ? addDays(date, -1) : date;
+}
+
+/**
+ * The pre-fix formula (Denver date of now minus 7 hours), which app builds before the fix still use.
+ * It differs from boardDayKey only on Nov 1 2026 6:00-7:00 AM MST and Mar 14 2027 7:00-8:00 AM MDT
+ * (and the same hours on later daylight-saving days).
+ */
+export function legacyBoardDayKey(nowMs: number = Date.now()): string {
+	return partsOf(DENVER_DATE, nowMs - ROLLOVER_HOUR_MT * 3_600_000).date;
 }
 
 function mergeById<T extends { id: string }>(first: T[] = [], second: T[] = []): T[] {
@@ -91,7 +118,7 @@ export function validateDays(value: unknown, base: PromptFeed): { ok: true; days
 /** Drops days older than yesterday (board-day keys sort as strings). */
 export function pruneDays(days: DayMap | undefined, nowMs: number = Date.now()): DayMap | undefined {
 	if (!days) return undefined;
-	const cutoff = boardDayKey(nowMs - 86_400_000);
+	const cutoff = addDays(boardDayKey(nowMs), -1);
 	const out: DayMap = {};
 	for (const [k, v] of Object.entries(days)) if (k >= cutoff) out[k] = v;
 	return Object.keys(out).length ? out : undefined;
