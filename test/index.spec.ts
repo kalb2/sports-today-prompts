@@ -299,6 +299,22 @@ describe("/stage-day", () => {
 		const gone = (await (await fetchWorker("/prompts")).json()) as { days?: Record<string, unknown> };
 		expect(gone.days).toBeUndefined();
 	});
+	it("moves the top-level updatedAt when a day is staged or held", async () => {
+		const before = (await (await fetchWorker("/health")).json()) as { updatedAt: string };
+		const blind = { id: "blind-stamp", sport: "nba", title: "T", body: "T",
+			items: ["a", "b", "c", "d", "e"].map((x) => ({ id: `u-${x}`, label: x })) };
+		const staged = await fetchWorker("/stage-day", { method: "POST", headers: auth,
+			body: JSON.stringify({ date: "2099-01-04", entry: { featured: { blindTop5: "blind-stamp" }, boards: { blindTop5: [blind] } } }) });
+		expect(staged.status).toBe(200);
+		const afterStage = (await (await fetchWorker("/health")).json()) as { updatedAt: string };
+		expect(Date.parse(afterStage.updatedAt)).toBeGreaterThan(Date.parse(before.updatedAt));
+		const feed = (await (await fetchWorker("/prompts")).json()) as { updatedAt: string };
+		expect(feed.updatedAt).toBe(afterStage.updatedAt);
+		const del = await fetchWorker("/stage-day?date=2099-01-04", { method: "DELETE", headers: auth });
+		expect(del.status).toBe(200);
+		const afterHold = (await (await fetchWorker("/health")).json()) as { updatedAt: string };
+		expect(Date.parse(afterHold.updatedAt)).toBeGreaterThanOrEqual(Date.parse(afterStage.updatedAt));
+	});
 	it("rejects a day whose featured id is unknown", async () => {
 		const r = await fetchWorker("/stage-day", { method: "POST", headers: auth,
 			body: JSON.stringify({ date: "2099-01-03", entry: { featured: { blindTop5: "missing" } } }) });
