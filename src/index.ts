@@ -276,7 +276,8 @@ async function handleStageDay(request: Request, url: URL, env: Env): Promise<Res
 		if (whoError) return json({ error: "invalid_day", detail: whoError }, 400);
 		days[date] = one.days[date];
 	}
-	const next: PromptFeed = { ...base, days: Object.keys(days).length ? days : undefined };
+	// Staging or holding a day changes the stored feed, so the top-level stamp moves with it.
+	const next: PromptFeed = { ...base, updatedAt: new Date().toISOString(), days: Object.keys(days).length ? days : undefined };
 	if (!next.days) delete next.days;
 	delete next.today;
 	try {
